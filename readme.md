@@ -4,62 +4,74 @@ jQuery.waterfall is straightforward <a href="http://pinterest.com">pinterest</a>
 
 ## Usage
 
-Just include masonry and launch it.
+Just include waterfall and apply it on some container with items.
 ```html
-<script src="js/jquery.js"></script>
-<script src="js/jquery.masonry.js"></script>
-
-<script>
-$(function () {
-	$('.items-container').waterfall();
-});
-</script>
-
 <div class="items-container">
 	<div class="item">Item 1</div>
 	<div class="item">Item 2</div>
 	<div class="item">Item 3</div>
 </div>
+
+<script src="js/jquery.js"></script>
+<script src="js/jquery.waterfall.js"></script>
+<script>
+$(function () {
+	$('.items-container').waterfall();
+});
+</script>
 ```
 
 ## Options
 
-Options are passed when init. They’re optional.
+Options are passed when init takes place.
 ```javascript
 var opts = {
-	itemSelector: '.item', //by default – children of container
-	colMinWidth: 200, //px, by default – 200
-	defaultContainerWidth: //Container may be hidden, so it’s necessary to set default width. By default – $(window).width(),
-	colClass: null //Class to append to columns
+	itemSelector: '.item',
+	colMinWidth: 300,
+	defaultContainerWidth: $('.container').width(),
+	colClass: null
 }
 
-$container.masonry(opts)
+$container.waterfall(opts);
 ```
+
+#### `itemSelector`
+Optional item selector to form items. By default items are all children of container.
+
+#### `colMinWidth`
+Minimal width of column, in px. If column width is below `colMinWidth`, number of columns will be recalculated.
+
+#### `defaultContainerWidth`
+Container may be hidden, so it’s preferably to pass default width. By default – `$(window).width()`.
+
+#### `colClass`
+Class to append to each column.
 
 
 ## Methods
 
-To get waterfall instance:
+Waterfall instance is stored in `waterfall` data-attribute of jQuery.
 ```javascript
+$('.items-container').waterfall();
 var waterfall = $('.items-container').data('waterfall');
 ```
 
-`waterfall.reflow()` recounts needed number of columns, redistributes items. Speed is optimized, so it takes minimal possible calcs.
-There’s a sense to use this if resize happened.
+#### `waterfall.reflow()` 
+Recounts needed number of columns, redistributes items. Optimized for speed, so it takes minimal possible calcs.
+There’s a sense to call `waterfall.reflow()` if resize happened.
 
-
-`waterfall.add(item)` appends new item or items to layout, use this instead of `container.append(item)`.
-Waterfall will take care of optimal placing and appending
+#### `waterfall.add(item)` 
+Appends new item or bunch of items to layout. Using this is more preferrable than jQuery dom-inserting methods like `container.append(item)` etc.
+Waterfall will take care of optimal placing and appending.
 
 ```javascript
-waterfall.add($('<div class="item">Some item.</div>'));
-waterfall.add($('<div class="item">Item 1.</div><div class="item">Item 2.</div>'));
+waterfall.add($('<div class="item">Some item.</div>')); //one item
+waterfall.add($('<div class="item">Item 1.</div><div class="item">Item 2.</div>')); //few items
 ```
 
-## Principle
+## Principle of layout
 
-Plugin creates fluid columns according to `colMinWidth` param and carefully fills them with items.
-
+Waterfall creates fluid columns according to `colMinWidth` param and fills them with items.
 
 ## TODO
 * demo
