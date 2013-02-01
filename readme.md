@@ -1,17 +1,17 @@
 # jQuery.waterfall layout
 
-jQuery.waterfall is straightforward <a href="http://pinterest.com">pinterest</a>-like layout with fluid width of columns. The primary goal was to create fast, lightweight, bugproof and free alternative for <a href="http://isotope.metafizzy.co/custom-layout-modes/masonry-column-shift.html">isotope masonry column shift</a> layout.
+jQuery.waterfall is straightforward <a href="http://pinterest.com">pinterest</a>-like layout with fluid width of columns. The primary goal was to create fast, tiny, reliable and free alternative for <a href="http://isotope.metafizzy.co/custom-layout-modes/masonry-column-shift.html">isotope masonry column shift</a> layout.
 
 ## Usage
 
-```javascript
+Just include masonry and launch it.
+```html
 <script src="js/jquery.js"></script>
 <script src="js/jquery.masonry.js"></script>
 
 <script>
-//To make 
 $(function () {
-	$('.items-container').waterfall()
+	$('.items-container').waterfall();
 });
 </script>
 
@@ -23,7 +23,9 @@ $(function () {
 ```
 
 ## Options
-```
+
+Options are passed when init. They’re optional.
+```javascript
 var opts = {
 	itemSelector: '.item', //by default – children of container
 	colMinWidth: 200, //px, by default – 200
