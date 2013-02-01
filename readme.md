@@ -1,8 +1,8 @@
-# jQuery.waterfall 
+# jQuery.waterfall layout
 
 jQuery.waterfall is straightforward <a href="http://pinterest.com">pinterest</a>-like layout with fluid width of columns. The primary goal was to create fast, lightweight, bugproof and free alternative for <a href="http://isotope.metafizzy.co/custom-layout-modes/masonry-column-shift.html">isotope masonry column shift</a> layout.
 
-### Use
+## Usage
 
 ```javascript
 <script src="js/jquery.js"></script>
@@ -11,12 +11,7 @@ jQuery.waterfall is straightforward <a href="http://pinterest.com">pinterest</a>
 <script>
 //To make 
 $(function () {
-	$('.items-container').waterfall({
-		itemSelector: '.item', //by default – children of container
-		colMinWidth: 200, //px, by default – 200
-		defaultContainerWidth: //Container may be hidden, so it’s necessary to set default width. By default – $(window).width(),
-		colClass: null //Class to append to columns
-	})
+	$('.items-container').waterfall()
 });
 </script>
 
@@ -27,7 +22,20 @@ $(function () {
 </div>
 ```
 
-### Methods
+## Options
+```
+var opts = {
+	itemSelector: '.item', //by default – children of container
+	colMinWidth: 200, //px, by default – 200
+	defaultContainerWidth: //Container may be hidden, so it’s necessary to set default width. By default – $(window).width(),
+	colClass: null //Class to append to columns
+}
+
+$container.masonry(opts)
+```
+
+
+## Methods
 
 To get waterfall instance:
 ```javascript
@@ -46,11 +54,11 @@ waterfall.add($('<div class="item">Some item.</div>'));
 waterfall.add($('<div class="item">Item 1.</div><div class="item">Item 2.</div>'));
 ```
 
-### Principle
+## Principle
 
 Plugin creates fluid columns according to `colMinWidth` param and carefully fills them with items.
 
 
-### TODO
+## TODO
 * demo
 
