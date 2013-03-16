@@ -102,7 +102,23 @@ Like masonry column shift, but works.
 
 			//for each item place it correctly
 			self.items.each(function (i, el) {
-				self._getMinCol(self.container.children()).append($(el));
+				var col = el.getAttribute("data-column")
+				if (col){
+					switch(col){
+						case "left":
+						case "first":
+							self.container.children().first().append($(el))
+							break;
+						case "right":
+						case "last":
+							self.container.children().last().append($(el))
+							break;
+						default:
+							self.container.children().eq(Math.min(col, self.container.children().length)).append($(el))
+					}
+				} else {
+					self._getMinCol(self.container.children()).append($(el));
+				}
 			})
 
 			return self;

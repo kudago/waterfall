@@ -1,14 +1,12 @@
 # jQuery.waterfall layout
 
-*UPD.* Use better [jquery.waterfall2](https://github.com/dfcreative/jquery.waterfall2) instead — it flows content based just only on float:left and float:right.
-
 jQuery.waterfall is straightforward <a href="http://pinterest.com">pinterest</a>-like layout with fluid width of columns. The primary goal was to create fast, tiny, reliable and free alternative for <a href="http://isotope.metafizzy.co/custom-layout-modes/masonry-column-shift.html">isotope masonry column shift</a> layout.
 
 ## Usage
 
-Just include waterfall and apply it on some container with items.
+Just make class `.waterfall` on container and that’s all.
 ```html
-<div class="items-container">
+<div class="items-container waterfall">
 	<div class="item">Item 1</div>
 	<div class="item">Item 2</div>
 	<div class="item">Item 3</div>
@@ -16,27 +14,40 @@ Just include waterfall and apply it on some container with items.
 
 <script src="js/jquery.js"></script>
 <script src="js/jquery.waterfall.js"></script>
+```
+
+Also you can launch waterfall manually:
+```html
 <script>
 $(function () {
 	$('.items-container').waterfall();
 });
 </script>
 ```
+This will work out the same effect.
 
 ## Options
 
-Options are passed when init takes place.
+Options could be either parsed from container data-attributes:
+```html
+<div class="items-container waterfall" data-col-min-width="320" data-autoresize="true">
+	<div class="item">Item 1</div>
+	<div class="item">Item 2</div>
+	<div class="item">Item 3</div>
+</div>
+```
+or passed to init:
 ```javascript
 var opts = {
 	itemSelector: '.item',
 	colMinWidth: 300,
 	defaultContainerWidth: $('.container').width(),
-	colClass: null
+	colClass: null,
+	autoresize: true
 }
 
 $container.waterfall(opts);
 ```
-
 #### `itemSelector`
 Optional item selector to form items. By default items are all children of container.
 
@@ -48,6 +59,19 @@ Container may be hidden, so it’s preferably to pass default width. By default 
 
 #### `colClass`
 Class to append to each column.
+
+#### `Autoresize`
+By default columns supposed to be recalculated manually on resize (bind `reflow` method on resizing window), but if you don’t want to care of this, pass this option as true
+
+### Item properties
+Also you can set an options straight on items to fix exact column to place the item into. For example, this may happens if you want to point exact column for element, whether it is menu or something else:
+```html
+<div class="items-container waterfall" data-col-min-width="320" data-autoresize="true">
+	<div class="item" data-column="first">Item 1</div>
+	<div class="item" data-column="last">Item 2</div>
+	<div class="item" data-column="2">Item 3</div>
+</div>
+```
 
 
 ## Methods
