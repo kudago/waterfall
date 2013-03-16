@@ -1,5 +1,7 @@
 # jQuery.waterfall layout
 
+*UPD.* Use better [jquery.waterfall2](https://github.com/dfcreative/jquery.waterfall2) instead — it flows content based just only on float:left and float:right.
+
 jQuery.waterfall is straightforward <a href="http://pinterest.com">pinterest</a>-like layout with fluid width of columns. The primary goal was to create fast, tiny, reliable and free alternative for <a href="http://isotope.metafizzy.co/custom-layout-modes/masonry-column-shift.html">isotope masonry column shift</a> layout.
 
 ## Usage

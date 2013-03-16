@@ -13,7 +13,8 @@ Like masonry column shift, but works.
 			itemSelector: null,
 			colMinWidth: 200,
 			defaultContainerWidth: $(window).width(),
-			colClass: null
+			colClass: null,
+			autoresize: false
 		},
 
 		_create: function (opts) {
@@ -26,8 +27,12 @@ Like masonry column shift, but works.
 
 			//save min width
 			o.colMinWidth = parseInt(self.items.css("min-width")) || o.colMinWidth;
-
+			//console.log(window.getComputedStyle(self.items[0])["width"])
 			self.reflow();
+
+			if (o.autoresize) {
+				$(window).resize(self.reflow.bind(self))
+			}
 		},
 
 		//==========================API
@@ -35,7 +40,6 @@ Like masonry column shift, but works.
 		reflow: function () {
 			var self = this, o = self.options,
 				neededCols = self._countNeededColumns();
-
 			if (neededCols == self.container.children().length) return;
 			self.items.detach();
 			self._ensureColumns(neededCols)._refill();
@@ -85,7 +89,6 @@ Like masonry column shift, but works.
 				"display": "inline-block",
 				"vertical-align": "top"
 			})
-
 			return self;
 		},
 
@@ -132,4 +135,26 @@ Like masonry column shift, but works.
 			if (!$(el).data("waterfall")) $(el).data("waterfall", new Waterfall(el, opts));
 		})
 	}
+
+
+	$(function () {
+		$(".waterfall").each(function (i, e){
+				var $e = $(e),
+					initObj = {}
+				if ($e.data("autoresize") != undefined) {
+					initObj.autoresize = $e.data("autoresize")
+				}
+				if ($e.data("colMinWidth") != undefined) {
+					initObj.colMinWidth = $e.data("colMinWidth")
+				}
+				if ($e.data("defaultContainerWidth") != undefined) {
+					initObj.defaultContainerWidth = $e.data("defaultContainerWidth")
+				}
+				if ($e.data("colClass") != undefined) {
+					initObj.colClass = $e.data("colClass")
+				}
+				$e.waterfall(initObj);
+			});
+		})
+
 })(jQuery)
