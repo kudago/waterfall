@@ -1,0 +1,401 @@
+﻿<style>
+	*, *:after, *:before {
+		-webkit-box-sizing: border-box;
+		-moz-box-sizing: border-box;
+		box-sizing: border-box;
+	}
+	body{
+		padding:0px;
+		margin:0;
+		font-family: "Arial", "Helvetica", sans-serif;
+		line-height: 20px;
+		font-size: 16px;
+		position: relative;
+		background: rgb(240,242,244);
+	}
+	a{
+		color: black;
+	}
+	a:hover{
+		color: #ff3355;
+	}
+	h1,h2,h3,h4,h5,h6{
+		padding:0px 0 0 0px;
+		margin:20px 0 0 0;
+		line-height: 1.2;
+	}
+	h1:first-child, h2:first-child, h3:first-child, h4:first-child, h5:first-child, h6:first-child{
+		margin-top: 0;
+	}
+	h1 > small{
+		font-weight: normal;
+	}
+	p{
+		padding:0px 0 0 0;
+		margin: 10px 0 0 0;
+	}
+	ul, ol{
+		padding:0px 0 0 20px;
+		margin:0;
+	}
+	ul > li, ol > li{
+		margin:10px 0 0 0;
+		padding:0px 0 0 0;
+	}
+	aside{
+		color: white;
+		width: 225px;
+		position: fixed;
+		background-color: rgb(25,30,35);
+		background-image: linear-gradient(rgb(25,30,35), rgb(75,80,85));
+		height: 100%;
+		padding: 20px;
+		font-size: 14px;
+		box-shadow: inset -10px 0 10px -10px black;
+	}
+	footer{
+		z-index: 2;
+		position: absolute;
+		bottom: 20px;
+		left: 0;
+		height: 40px;
+		line-height: 40px;
+		display: block;
+		color: black;
+		width: 100%;
+		text-align: center;
+	}
+	aside h1{
+		/*padding:20px 20px 0;*/
+		font-size: 24px;
+	}
+	aside ul{
+		list-style:none;
+		padding:0;
+		margin: 10px 0 0 0;
+	}
+	aside li{
+		padding:0;
+		margin:0;
+	}
+	aside > ul > li{
+		margin:0 0 0px;
+	}
+	aside ul > li > ul{
+		margin:0 0 0 15px;
+	}
+	aside a{
+		color: white;
+	}
+	aside > ul > li > ul > li {
+	}
+	aside > ul > li > a:before{
+		content:'− ';
+		opacity: 1;
+		display: inline-block;
+		margin-right: 7px;
+	}
+	aside > ul > li li a:before{
+		content:none;
+		opacity: 1;
+		display: inline-block;
+		margin-right: 7px;
+	}
+	aside a:hover:before{
+		opacity: 1;
+	}
+	.case{
+		/*border-radius: 12px;*/
+		padding: 20px 20px;
+		margin:0px 0 0 225px;
+		overflow: hidden;
+		position: relative;
+		border-top:3px dashed black;
+		background-color:rgba(240,242,244,1); 
+		background-image:linear-gradient(to top, rgba(240,242,244,1), rgba(210,214,218,1)); 
+	}
+	code{
+		border-radius: 2px;
+		margin:10px 0 0 0;
+		font-size: 13px;
+		border-radius: 10px;
+		border:2px dashed #d3d3d3;
+		padding: 0 5px;
+		color: #ff3355;
+	}
+	code.block{
+		padding: 10px 10px 10px;
+		margin: 10px 0 0px 0;
+		display: block;
+		border:2px dashed #d3d3d3;
+		overflow: hidden;
+		/*white-space: pre-wrap;*/
+		/*word-break: break-all;*/
+		white-space: nowrap;
+		position: relative;
+	}
+	textarea{
+		margin:10px 0 0 0;
+		display: block;
+		position: relative;
+		width: 100%;
+		max-width: 100%;
+		tab-size: 3;
+	}
+	code.block:before{
+		content:'';
+		position: absolute;
+		width: 30px;
+		height: 100%;
+		right: 0;
+		top: 0;
+		background: linear-gradient(to left, rgba(255,255,255,1), rgba(255,255,255,0));
+	}
+	code:hover{
+		border-color: #333;
+	}
+	.count{
+		color: white;
+		background: black;
+		font-weight: bolder;
+		display: inline-block;
+		width: 25px;
+		height: 25px;
+		line-height: 25px;
+		text-align: center;
+		border-radius: 50%;
+		position: relative;
+		margin-right: 10px;
+		font-size: 16px;
+	}
+	.count:after{
+		content:'.';
+		position: absolute;
+		color: black;
+		right: -7px;
+		font-size: 20px;
+	}
+	.waterfall{
+	}
+	.waterfall > div > div{
+		background: white;
+		margin:0 7px 7px 0;
+		padding: 15px;
+		box-shadow: 0 1px 5px -1px rgba(170, 180, 190, 1); 
+		/*outline: 1px solid rgba(255,100,130,.2);*/
+	}
+	.waterfall > div > div:hover{
+		/*outline: 1px solid rgba(255,100,130,1);*/
+	}
+	.special{
+		border-radius: 10px;
+		border: 3px solid black;
+	}
+	dl{
+		margin:0;
+		padding:0px 0;
+	}
+	dt{
+		margin:15px 0 0;
+		font-weight: bold;
+		font-size: 16px;
+		font-family: monospace;
+		color: #ff3355;
+	}
+	dt small{
+		color: black;
+		font-weight: normal;
+	}
+	dt:after{
+		/*content:' − ';
+		color: black;*/
+	}
+	dd{
+		margin:0;
+		padding:0 0 0 30px;
+	}
+</style>
+
+<aside>
+	<h1>Jquery.waterfall demo: <small>copy-paste friendly examples</small></h1>
+	<ul>
+		<li><a href="#start-case">Start</a></li>
+		<li><a href="#options-case">Options</a></li>
+		<li><a href="#controlling-items-case">Item settings</a></li>
+		<li><a href="#predefined-columns-case">Predefined columns</a></li>
+		<li><a href="#methods-case">API</a></li>
+	</ul>
+
+	<footer>
+		© Ivanov Dmitry (<a href="http://github.com/dfcreative">dfcreative</a>)
+	</footer>
+</aside>
+
+<div id="start-case" class="case waterfall" data-hello="1">
+	<div class="special">
+		<h2><a href="#start-case">Start waterfall</a></h2>
+		<p>To run waterfall with default options ☞</p>
+	</div>
+	<div class="special">
+		<header><span class="count">1</span> Include <em>jquery/zepto</em> and <em>jquery.waterfall</em></header>
+		<textarea rows="5">
+&lt;script src=&quot;js/zepto.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;js/jquery.waterfall.js&quot;&gt;&lt;/script&gt;
+		</textarea>
+	</div>
+	<div class="special">
+		<header><span class="count">2</span> Append class <code>waterfall</code> to a container with items:</header>
+		<textarea rows="8">
+<div class="waterfall"> 
+	<div>Item 1</div> 
+	<div>Item 2</div> 
+	… 
+	<div>Item N</div> 
+</div>
+		</textarea>
+		<p>☜ That’s it. Every element which has the class <code>waterfall</code> will become a waterfall layout.</p>
+	</div>	
+	<div class="special" data-column="3">
+		<header><span class="count">2a</span> Alternately, you can init any container when document is ready. In this case you don’t have to append class <code>waterfall</code>:</header>
+		<textarea rows="5">
+$(function(){
+	$(&quot;.some-container&quot;).waterfall();
+})
+		</textarea>
+	</div>
+	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor.</div>
+	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.</div>
+	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa.</div>
+	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem.</div>
+	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu.</div>
+	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor.</div>
+	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa.</div>
+	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor.</div>
+	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.</div>
+	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa.</div>
+	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem.</div>
+	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu.</div>
+	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor.</div>
+	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa.</div>
+</div>
+
+
+<div id="options-case" class="case waterfall" data-col-min-width="400" data-col-class="content-column">
+	<div class="special">
+		<h2><a href="#options-case">Options</a></h2>
+		<p>Options could be set up as data-attributes or passed right to the constructor ☞</p>
+		<h3>Possible options</h3>
+		<dl>
+			<dt>colMinWidth: <small>240px</small></dt>
+			<dd>Minimal column width in pixels that’s used as a basis for calculating number of columns. Only pixel values accepted for now. If value is undefined — it firstly tries to parse css <code>min-width</code>, and if it fails will fall down to default 240px.</dd>
+			<dt>defaultContainerWidth: <small>$(window).width()</small></dt>
+			<dd>If container is hidden, it’s preferrable to pass default width to count on.</dd>
+			<dt>colClass: <small>undefined</small></dt>
+			<dd>Class to append to each column</dd>
+			<dt>autoresize: <small>true</small></dt>
+			<dd>Bind reflow on window resize</dd>
+		</dl>
+	</div>
+	<div class="special">
+		<h3><span class="count">α</span>Passing options as data-attributes</h3>
+		<p>Set options as data-attributes, translating camel-case to dashed-case:</p>
+		<textarea rows="8">
+<div class="waterfall" 
+	data-col-min-width="320" 
+	data-default-container-width="800" 
+	data-col-class="content-column" 
+	data-autoresize="true"> 
+… 
+</div>
+		</textarea>
+	</div>
+	<div class="special">
+		<h3><span class="count">β</span>Passing options to the constructor</h3>
+		<textarea rows="8">
+$('.some-container').waterfall({ 
+	colMinWidth: 320, 
+	defaultContainerWidth: 800, 
+	colClass: 'content-column', 
+	autoresize: true
+})
+		</textarea>
+	</div>
+	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.</div>
+	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa.</div>
+	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem.</div>
+	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu.</div>
+	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor.</div>
+	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa.</div>
+	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor.</div>
+	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.</div>
+	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa.</div>
+	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem.</div>
+	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu.</div>
+	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor.</div>
+	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa.</div>
+</div>
+
+
+<div id="predefined-case" class="case waterfall">
+	<div>
+		<h2><a href="#start-case">TODOs</a></h2>
+		<ul>
+			<li>Floats mode (no columns at all)</li>
+			<li>Spanning items: span2, span3 etc, like table-cells.</li>
+		</ul>
+	</div>
+</div>
+
+
+<div id="predefined-columns-case" class="case waterfall">
+	<div>
+		<h2><a href="#start-case">Predefined columns</a></h2>
+		<p>
+			You can define columns before waterfall has loaded. This will help you avoid unpleasant layout spring
+		</p>
+	</div>
+</div>
+
+
+<div id="todoes" class="case waterfall">
+	<div>
+		<h2><a href="#start-case">TODOs</a></h2>
+		<ul>
+			<li>Floats mode (no columns at all)</li>
+			<li>Spanning items: span2, span3 etc, like table-cells.</li>
+		</ul>
+	</div>
+</div>
+
+
+
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+<script>window.jQuery || document.write('<script src="js/zepto.js"><\/script>')</script>
+
+<script src="jquery.waterfall.js"></script>
+<script>
+	$(function(){
+
+		//Make code blocks auto-select on click
+		function selectText(text) {
+			var range, selection;    
+			if (document.body.createTextRange) { //ms
+				range = document.body.createTextRange();
+				range.moveToElementText(text);
+				range.select();
+			} else if (window.getSelection) { //all others
+				selection = window.getSelection();        
+				range = document.createRange();
+				range.selectNodeContents(text);
+				selection.removeAllRanges();
+				selection.addRange(range);
+			}
+		}
+
+		$("code.block").click(function(e){
+			selectText(e.target);
+		})
+
+	})
+</script>

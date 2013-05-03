@@ -48,9 +48,6 @@ var opts = {
 
 $container.waterfall(opts);
 ```
-#### `itemSelector`
-Optional item selector to form items. By default items are all children of container.
-
 #### `colMinWidth`
 Minimal width of column, in px. If column width is below `colMinWidth`, number of columns will be recalculated.
 
@@ -101,4 +98,5 @@ Waterfall creates fluid columns according to `colMinWidth` param and fills them 
 
 ## TODO
 * demo
+* when resize happens with columns recounting, the width of container shortly becomes zero, therefore document scrolls up. You should preserve scroll position in these cases.
 

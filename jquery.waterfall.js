@@ -11,7 +11,7 @@ Like masonry column shift, but works.
 	$.extend(Waterfall.prototype, {
 		options: {
 			itemSelector: null,
-			colMinWidth: 200,
+			colMinWidth: 300,
 			defaultContainerWidth: $(window).width(),
 			colClass: null,
 			autoresize: false
@@ -102,22 +102,23 @@ Like masonry column shift, but works.
 
 			//for each item place it correctly
 			self.items.each(function (i, el) {
-				var col = el.getAttribute("data-column")
+				var $e = $(el),
+					col = $e.data("float") || $e.data("column");
 				if (col){
 					switch(col){
 						case "left":
 						case "first":
-							self.container.children().first().append($(el))
+							self.container.children().first().append($e)
 							break;
 						case "right":
 						case "last":
-							self.container.children().last().append($(el))
+							self.container.children().last().append($e)
 							break;
 						default:
-							self.container.children().eq(Math.min(col, self.container.children().length)).append($(el))
+							self.container.children().eq(Math.min(col-1, self.container.children().length)).append($e)
 					}
 				} else {
-					self._getMinCol(self.container.children()).append($(el));
+					self._getMinCol(self.container.children()).append($e);
 				}
 			})
 
@@ -152,25 +153,18 @@ Like masonry column shift, but works.
 		})
 	}
 
+	//Simple options parser. The same as $.fn.data(), but for zepto
+	function parseOptions(el){
+		//TODO: find camel-case transformer
+	}
+
 
 	$(function () {
 		$(".waterfall").each(function (i, e){
 				var $e = $(e),
-					initObj = {}
-				if ($e.data("autoresize") != undefined) {
-					initObj.autoresize = $e.data("autoresize")
-				}
-				if ($e.data("colMinWidth") != undefined) {
-					initObj.colMinWidth = $e.data("colMinWidth")
-				}
-				if ($e.data("defaultContainerWidth") != undefined) {
-					initObj.defaultContainerWidth = $e.data("defaultContainerWidth")
-				}
-				if ($e.data("colClass") != undefined) {
-					initObj.colClass = $e.data("colClass")
-				}
-				$e.waterfall(initObj);
+					opts = parseOptions(e);
+				$e.waterfall(opts);
 			});
 		})
 
-})(jQuery)
+})(jQuery || $)
