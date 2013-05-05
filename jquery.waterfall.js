@@ -27,13 +27,12 @@ Like masonry column shift, but works.
 			if (self.container.children().hasClass(colClass)) {
 				//Columns init
 				self.items = $('.' + colClass, self.container).children();
-				self.container.children().remove();
 			} else {
 				//Items init
 				self.items = o.itemSelector ? $(o.itemSelector, self.container) : self.container.children();
 			}
-
-			self.items.detach();
+			
+			self._resetColumns();
 			o.colMinWidth = opts.colMinWidth || parseInt(self.items.css("min-width")) || o.colMinWidth;
 
 			self.reflow();
@@ -55,12 +54,12 @@ Like masonry column shift, but works.
 		},
 		setOption: function (name, value) {
 			if (this.options) {this.options[name] = value;}
-			this.reflow();
+			this._resetColumns().reflow();
 			return this;
 		},
 		setOptions: function (opts) {
 			this.options = $.extend(this.options, opts);
-			this.reflow()
+			this._resetColumns().reflow()
 			return this;
 		},
 
@@ -81,6 +80,8 @@ Like masonry column shift, but works.
 		add: function (itemSet) {
 			var self = this, o = self.options, cols = self.container.children();
 
+			itemSet = $(itemSet);
+
 			itemSet.each(function (i, el) {
 				var $item = $(el);
 				self._getMinCol(cols).append($item);
@@ -97,6 +98,14 @@ Like masonry column shift, but works.
 		_countNeededColumns: function () {
 			var self = this, o = self.options;
 			return ~~((self.container.width() || o.defaultContainerWidth) / o.colMinWidth) || 1;
+		},
+
+		//Just ensures that columns has correct classes etc
+		_resetColumns: function(){
+			var self = this;
+			self.items.detach();
+			self.container.children().remove();
+			return self;
 		},
 
 		//ensures only number of columns exist
@@ -178,11 +187,17 @@ Like masonry column shift, but works.
 	})
 
 
-	$.fn.waterfall = function (opts) {
-		return $(this).each(function (i, el) {
-			var wf = new Waterfall(el, opts);
-			if (!$(el).data("waterfall")) $(el).data("waterfall", wf);
-		})
+	$.fn.waterfall = function (arg, arg2) {
+		if (typeof arg == "string") {//Call API method
+			return $(this).each(function (i, el) {
+				$(el).data("waterfall")[arg](arg2);
+			})
+		} else {
+			return $(this).each(function (i, el) {
+				var wf = new Waterfall(el, arg);
+				if (!$(el).data("waterfall")) $(el).data("waterfall", wf);
+			})			
+		}
 	}
 
 
