@@ -2,7 +2,7 @@
 Simple min-height-masonry layout plugin.
 Like masonry column shift, but works.
 */
-(function ($){
+;(function ($){
 	var Waterfall = function (el, opts){
 		this.element = $(el);
 		this._create(opts)
@@ -228,4 +228,4 @@ Like masonry column shift, but works.
 			});
 		})
 
-})(window.jQuery || window.Zepto)
+})(window.jQuery || window.Zepto);
