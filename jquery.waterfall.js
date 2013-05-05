@@ -14,7 +14,7 @@ Like masonry column shift, but works.
 			colMinWidth: 300,
 			defaultContainerWidth: $(window).width(),
 			colClass: null,
-			autoresize: false
+			autoresize: true
 		},
 
 		_create: function (opts) {
@@ -22,12 +22,20 @@ Like masonry column shift, but works.
 			o = self.options = $.extend({}, self.options, opts);
 
 			self.container = self.element;
-			self.items = o.itemSelector ? $(o.itemSelector, self.container) : self.container.children();
-			self.items.detach();
 
-			//save min width
-			o.colMinWidth = parseInt(self.items.css("min-width")) || o.colMinWidth;
-			//console.log(window.getComputedStyle(self.items[0])["width"])
+			var colClass = o.colClass ? o.colClass : 'wf-column';
+			if (self.container.children().hasClass(colClass)) {
+				//Columns init
+				self.items = $('.' + colClass, self.container).children();
+				self.container.children().remove();
+			} else {
+				//Items init
+				self.items = o.itemSelector ? $(o.itemSelector, self.container) : self.container.children();
+			}
+
+			self.items.detach();
+			o.colMinWidth = opts.colMinWidth || parseInt(self.items.css("min-width")) || o.colMinWidth;
+
 			self.reflow();
 
 			if (o.autoresize) {
@@ -35,12 +43,34 @@ Like masonry column shift, but works.
 			}
 		},
 
+
+
 		//==========================API
+		//getset options
+		getOption: function (name) {
+			return this.options && this.options[name];
+		},
+		getOptions: function () {
+			return this.options;
+		},
+		setOption: function (name, value) {
+			if (this.options) {this.options[name] = value;}
+			this.reflow();
+			return this;
+		},
+		setOptions: function (opts) {
+			this.options = $.extend(this.options, opts);
+			this.reflow()
+			return this;
+		},
+
 		//Ensures column number correct, reallocates items
 		reflow: function () {
 			var self = this, o = self.options,
 				neededCols = self._countNeededColumns();
-			if (neededCols == self.container.children().length) return;
+
+			if (neededCols == self.container.children().length) return; //prevent recounting if columns enough
+
 			self.items.detach();
 			self._ensureColumns(neededCols)._refill();
 
@@ -76,9 +106,11 @@ Like masonry column shift, but works.
 				columns = self.container.children();
 
 			if (columns.length < num) {
+				var str = '';
 				for (var i = 0; i < num - columns.length; i++ ){
-					self.container.append(self._columnTpl());
+					str += self._columnTpl();
 				}
+				self.container.append(str);
 			} else if ( columns.length > num) {
 				columns.slice(- columns.length + num).remove();
 			}
@@ -115,7 +147,7 @@ Like masonry column shift, but works.
 							self.container.children().last().append($e)
 							break;
 						default:
-							self.container.children().eq(Math.min(col-1, self.container.children().length)).append($e)
+							self.container.children().eq(Math.max(Math.min(col, self.container.children().length) - 1, 0)).append($e)
 					}
 				} else {
 					self._getMinCol(self.container.children()).append($e);
@@ -142,29 +174,43 @@ Like masonry column shift, but works.
 
 			return cols.eq(minColNum);
 		},
-
 		
 	})
 
 
 	$.fn.waterfall = function (opts) {
 		return $(this).each(function (i, el) {
-			if (!$(el).data("waterfall")) $(el).data("waterfall", new Waterfall(el, opts));
+			var wf = new Waterfall(el, opts);
+			if (!$(el).data("waterfall")) $(el).data("waterfall", wf);
 		})
 	}
 
-	//Simple options parser. The same as $.fn.data(), but for zepto
-	function parseOptions(el){
-		//TODO: find camel-case transformer
+
+	//Simple options parser. The same as $.fn.data(), or element.dataset but for zepto
+	$.parseDataAttributes = function(el){
+		var data = {};
+		if (el.dataset) {
+			$.extend(data, el.dataset);
+		} else {
+			[].forEach.call(el.attributes, function(attr) {
+				if (/^data-/.test(attr.name)) {
+					var camelCaseName = attr.name.substr(5).replace(/-(.)/g, function ($0, $1) {
+					    return $1.toUpperCase();
+					});
+					data[camelCaseName] = attr.value;
+				}
+			});
+		}
+		return data;
 	}
 
 
 	$(function () {
 		$(".waterfall").each(function (i, e){
 				var $e = $(e),
-					opts = parseOptions(e);
+					opts = $.parseDataAttributes(e);
 				$e.waterfall(opts);
 			});
 		})
 
-})(jQuery || $)
+})(window.jQuery || window.Zepto)
