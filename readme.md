@@ -1,10 +1,11 @@
 # jQuery.waterfall layout
 
 jQuery.waterfall is straightforward <a href="http://pinterest.com">pinterest</a>-like layout with fluid width of columns. The primary goal was to create fast, tiny, reliable and free alternative for <a href="http://isotope.metafizzy.co/custom-layout-modes/masonry-column-shift.html">isotope masonry column shift</a> layout.
+See documented demo [here](http://dfcreative.github.io/projects/waterfall/).
 
 ## Usage
 
-Just make class `.waterfall` on container and that’s all.
+Just make class `.waterfall` on container and that’s it.
 ```html
 <div class="items-container waterfall">
 	<div class="item">Item 1</div>
@@ -67,13 +68,14 @@ Also you can set an options straight on items to fix exact column to place the i
 	<div class="item" data-column="first">Item 1</div>
 	<div class="item" data-column="last">Item 2</div>
 	<div class="item" data-column="2">Item 3</div>
+	<div class="item" data-float="left">Item 4</div>
 </div>
 ```
 
 
 ## Methods
 
-Waterfall instance is stored in `waterfall` data-attribute of jQuery.
+Waterfall instance is stored in `waterfall` data-attribute of jQuery. Be aware that there’s none API in zepto.
 ```javascript
 $('.items-container').waterfall();
 var waterfall = $('.items-container').data('waterfall');
@@ -95,8 +97,3 @@ waterfall.add($('<div class="item">Item 1.</div><div class="item">Item 2.</div>'
 ## Principle of layout
 
 Waterfall creates fluid columns according to `colMinWidth` param and fills them with items.
-
-## TODO
-* demo
-* when resize happens with columns recounting, the width of container shortly becomes zero, therefore document scrolls up. You should preserve scroll position in these cases.
-
