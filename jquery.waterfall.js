@@ -224,6 +224,9 @@ Like masonry column shift, but works.
 		$(".waterfall").each(function (i, e){
 				var $e = $(e),
 					opts = $.parseDataAttributes(e);
+					if (opts.width && !opts.colMinWidth) {
+						opts.colMinWidth = opts.width
+					}
 				$e.waterfall(opts);
 			});
 		})
