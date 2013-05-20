@@ -8,6 +8,8 @@ Like masonry column shift, but works.
 		this._create(opts)
 	}
 
+	Waterfall.defaultClass = "waterfall";
+
 	$.extend(Waterfall.prototype, {
 		options: {
 			itemSelector: null,
@@ -202,28 +204,32 @@ Like masonry column shift, but works.
 
 
 	//Simple options parser. The same as $.fn.data(), or element.dataset but for zepto
-	$.parseDataAttributes = function(el){
-		var data = {};
-		if (el.dataset) {
-			$.extend(data, el.dataset);
-		} else {
-			[].forEach.call(el.attributes, function(attr) {
-				if (/^data-/.test(attr.name)) {
-					var camelCaseName = attr.name.substr(5).replace(/-(.)/g, function ($0, $1) {
-					    return $1.toUpperCase();
-					});
-					data[camelCaseName] = attr.value;
-				}
-			});
+	if (!$.parseDataAttributes) {
+		$.parseDataAttributes = function(el){
+			var data = {};
+			if (el.dataset) {
+				$.extend(data, el.dataset);
+			} else {
+				[].forEach.call(el.attributes, function(attr) {
+					if (/^data-/.test(attr.name)) {
+						var camelCaseName = attr.name.substr(5).replace(/-(.)/g, function ($0, $1) {
+						    return $1.toUpperCase();
+						});
+						data[camelCaseName] = attr.value;
+					}
+				});
+			}
+			return data;
 		}
-		return data;
 	}
 
 
 	$(function () {
-		$(".waterfall").each(function (i, e){
+		var defClass = window.waterfall && window.waterfall.defaultClass || Waterfall.defaultClass;
+
+		$("." + defClass).each(function (i, e){
 				var $e = $(e),
-					opts = $.parseDataAttributes(e);
+					opts = $.extend(window.waterfall || {}, $.parseDataAttributes(e));
 					if (opts.width && !opts.colMinWidth) {
 						opts.colMinWidth = opts.width
 					}

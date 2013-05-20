@@ -386,8 +386,8 @@
 	<div>Item N</div> 
 </div>
 		</textarea>
-		<p>That’s it. Every element which has the class <code>waterfall</code> will become a waterfall layout.</p>
-	</div>	
+		<p><em>That’s it.</em> Every element which has the class <code>waterfall</code> will become a waterfall layout.</p>
+	</div>
 	<div class="special" data-float="4">
 		<header><span class="count">2a</span> Alternately, you can init any container when document is ready. In this case you don’t have to append class <code>waterfall</code>:</header>
 		<textarea rows="5">
@@ -417,7 +417,7 @@ $(function(){
 <div id="options-case" class="case waterfall" data-col-min-width="400" data-col-class="content-column">
 	<div class="special">
 		<h2><a href="#options-case">Options</a></h2>
-		<p>Options could be set up as data-attributes or passed right to the constructor ☞</p>
+		<p>Options could be set up as data-attributes, predefined as <code>window.waterfall</code> object or passed right to the constructor ☞</p>
 		<h3>Possible options</h3>
 		<dl>
 			<dt>colMinWidth: <small>240px</small></dt>
@@ -428,6 +428,8 @@ $(function(){
 			<dd>Class to append to each column</dd>
 			<dt>autoresize: <small>true</small></dt>
 			<dd>Bind reflow on window resize</dd>
+			<dt>defaultClass: <small>'waterfall'</small></dt>
+			<dd>Class of container which to init as waterfall by default</dd>
 		</dl>
 	</div>
 	<div class="special">
@@ -452,6 +454,18 @@ $('.some-container').waterfall({
 	colClass: 'content-column', 
 	autoresize: true
 })
+</textarea>
+	</div>
+	<div class="special">
+		<h3><span class="count">γ</span>Predefining options</h3>
+		<textarea rows="8">
+<script>
+window.waterfall = {
+	defaultClass: "non-waterfall", "colMinWidth": 300
+}
+</script>
+
+<script src="waterfall.js"></script>
 </textarea>
 	</div>
 	<div class="special">
@@ -584,9 +598,9 @@ waterfall.add(<br>'&lt;div class=&quot;item&quot;&gt;Item 1.&lt;/div&gt;' + <br>
 </div>
 
 
-<div id="todoes" class="case waterfall">
+<div id="todo" class="case waterfall">
 	<div class="special">
-		<h2><a href="#start-case">TODOes</a></h2>
+		<h2><a href="#start-case">TODOs</a></h2>
 	</div>
 	<div><h4>Floats mode (no columns at all)</h4></div>
 	<div><h4>Spanning items: span2, span3 etc, like table-cells.</h4></div>
@@ -595,6 +609,7 @@ waterfall.add(<br>'&lt;div class=&quot;item&quot;&gt;Item 1.&lt;/div&gt;' + <br>
 	<div><h4>Fixed-width floating aside column</h4></div>
 	<div><h4>Think of margins between columns</h4></div>
 	<div><h4>Correct reflow when inner element size changed</h4></div>
+	<div><h4>Displacement as on gplus when new item added.</h4></div>
 </div>
 </div>
 
