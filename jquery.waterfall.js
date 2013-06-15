@@ -16,7 +16,8 @@ Like masonry column shift, but works.
 			colMinWidth: 300,
 			defaultContainerWidth: $(window).width(),
 			colClass: null,
-			autoresize: true
+			autoresize: true,
+			order: "waterfall" //columns
 		},
 
 		_create: function (opts) {
@@ -27,15 +28,23 @@ Like masonry column shift, but works.
 
 			var colClass = o.colClass ? o.colClass : 'wf-column';
 			if (self.container.children().hasClass(colClass)) {
-				//Columns init
-				self.items = $('.' + colClass, self.container).children();
+				//Columns init — keep initial order of items
+				var cols = $('.' + colClass, self.container),
+					children = $('.' + colClass, self.container).children();				
+				self.items = [];
+				for (var i = 0; i < children.length; i++){
+					self.items.push(cols.eq(i%3).children()[Math.floor(i/3)])
+				}
 			} else {
 				//Items init
-				self.items = o.itemSelector ? $(o.itemSelector, self.container) : self.container.children();
+				self.items = [];
+				self.container.children().each(function(i,e){
+					self.items.push(e);
+				});
 			}
 			
 			self._resetColumns();
-			o.colMinWidth = opts.colMinWidth || parseInt(self.items.css("min-width")) || o.colMinWidth;
+			o.colMinWidth = opts.colMinWidth || o.colMinWidth;
 
 			self.reflow();
 
@@ -72,7 +81,7 @@ Like masonry column shift, but works.
 
 			if (neededCols == self.container.children().length) return; //prevent recounting if columns enough
 
-			self.items.detach();
+			$(self.items).detach();
 			self._ensureColumns(neededCols)._refill();
 
 			return self;
@@ -89,7 +98,7 @@ Like masonry column shift, but works.
 				self._getMinCol(cols).append($item);
 			})
 
-			self.items = self.items.add(itemSet);
+			self.items.push(itemSet);
 			return self;
 		},
 
@@ -105,7 +114,7 @@ Like masonry column shift, but works.
 		//Just ensures that columns has correct classes etc
 		_resetColumns: function(){
 			var self = this;
-			self.items.detach();
+			$(self.items).detach();
 			self.container.children().remove();
 			return self;
 		},
@@ -144,7 +153,7 @@ Like masonry column shift, but works.
 			var self = this, o = self.options;
 
 			//for each item place it correctly
-			self.items.each(function (i, el) {
+			$.each(self.items, function (i, el) {
 				var $e = $(el),
 					col = $e.data("float") || $e.data("column");
 				if (col){
