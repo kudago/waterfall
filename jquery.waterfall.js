@@ -32,8 +32,11 @@ Like masonry column shift, but works.
 				var cols = $('.' + colClass, self.container),
 					children = $('.' + colClass, self.container).children();				
 				self.items = [];
-				for (var i = 0; i < children.length; i++){
-					self.items.push(cols.eq(i%3).children().eq(Math.floor(i/3)))
+				var i = 0, end = children.length * cols.length;
+				while (self.items.length < children.length && i < end) {
+					var el = cols.eq(i%3).children()[Math.floor(i/3)];
+					if (el) self.items.push($(el));
+					i++;
 				}
 			} else {
 				//Items init
@@ -44,6 +47,7 @@ Like masonry column shift, but works.
 			}
 
 			self.lastItem = self.items[self.items.length-1]
+			self.firstItem = self.items[0]
 			
 			self._resetColumns();
 			o.colMinWidth = opts.colMinWidth || o.colMinWidth;
