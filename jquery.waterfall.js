@@ -33,15 +33,17 @@ Like masonry column shift, but works.
 					children = $('.' + colClass, self.container).children();				
 				self.items = [];
 				for (var i = 0; i < children.length; i++){
-					self.items.push(cols.eq(i%3).children()[Math.floor(i/3)])
+					self.items.push(cols.eq(i%3).children().eq(Math.floor(i/3)))
 				}
 			} else {
 				//Items init
 				self.items = [];
 				self.container.children().each(function(i,e){
-					self.items.push(e);
+					self.items.push($(e));
 				});
 			}
+
+			self.lastItem = self.items[self.items.length-1]
 			
 			self._resetColumns();
 			o.colMinWidth = opts.colMinWidth || o.colMinWidth;
@@ -96,9 +98,11 @@ Like masonry column shift, but works.
 			itemSet.each(function (i, el) {
 				var $item = $(el);
 				self._getMinCol(cols).append($item);
+				self.items.push($item)
 			})
 
-			self.items.push(itemSet);
+			self.lastItem = self.items[self.items.length-1]
+
 			return self;
 		},
 
