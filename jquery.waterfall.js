@@ -17,7 +17,8 @@ Like masonry column shift, but works.
 			defaultContainerWidth: $(window).width(),
 			colClass: null,
 			autoresize: true,
-			order: "waterfall" //columns
+			order: "waterfall", //TODO: columns order, like 
+			mode: "absolute" //TODO: floats, columns
 		},
 
 		_create: function (opts) {
@@ -25,6 +26,12 @@ Like masonry column shift, but works.
 			o = self.options = $.extend({}, self.options, opts);
 
 			self.container = self.element;
+
+			if (o.mode == "absolute"){
+				self.container[0].style.position = "relative";
+			}
+
+			self.columns = [[]]; //array of arrays of elements = waterfall model. Spanning elements may present in both ajacent arrays.
 
 			var colClass = o.colClass ? o.colClass : 'wf-column';
 			if (self.container.children().hasClass(colClass)) {
@@ -46,10 +53,16 @@ Like masonry column shift, but works.
 				});
 			}
 
+			if (o.mode == "absolute"){				
+				for (var i = self.items.length; i--;){
+					self.items[i][0].style.position = "absolute";
+				}
+			}
+
 			self.lastItem = self.items[self.items.length-1]
 			self.firstItem = self.items[0]
 			
-			self._resetColumns();
+			self._removeColumns();
 			o.colMinWidth = opts.colMinWidth || o.colMinWidth;
 
 			self.reflow();
@@ -85,9 +98,12 @@ Like masonry column shift, but works.
 			var self = this, o = self.options,
 				neededCols = self._countNeededColumns();
 
-			if (neededCols == self.container.children().length) return; //prevent recounting if columns enough
+			if (neededCols == self.columns.length) {
+				self._updateWidths();
+				return;
+			} //prevent recounting if columns enough
 
-			$(self.items).detach();
+			//$(self.items).detach();
 			self._ensureColumns(neededCols)._refill();
 
 			return self;
@@ -119,36 +135,48 @@ Like masonry column shift, but works.
 			return ~~((self.container.width() || o.defaultContainerWidth) / o.colMinWidth) || 1;
 		},
 
-		//Just ensures that columns has correct classes etc
-		_resetColumns: function(){
-			var self = this;
-			$(self.items).detach();
+		//Ensures that columns has correct classes etc
+		_removeColumns: function(){
+			var self = this, o = self.options;
+			var items = $(self.items);
+			items.detach();
 			self.container.children().remove();
+			if (o.mode == "absolute"){
+				self.container.append(self.items)
+			}	
 			return self;
 		},
 
 		//ensures only number of columns exist
 		_ensureColumns: function (num) {
 			var self = this, o = self.options
-				num = num || 1,
-				columns = self.container.children();
+				num = num || 1;
+				//columns = self.container.children();
 
-			if (columns.length < num) {
+			if (self.columns.length < num) {
 				var str = '';
-				for (var i = 0; i < num - columns.length; i++ ){
-					str += self._columnTpl();
+				var colNum = self.columns.length;
+				for (var i = 0; i < num - colNum; i++ ){
+					//str += self._columnTpl();
+					self.columns.push([]);
 				}
-				self.container.append(str);
-			} else if ( columns.length > num) {
-				columns.slice(- columns.length + num).remove();
+				//self.container.append(str);
+			} else if ( self.columns.length > num) {
+				self.columns.length = num;
 			}
 
-			columns = self.container.children();
-			columns.css({
-				"width": 100 / columns.length +"%",
-				"display": "inline-block",
-				"vertical-align": "top"
-			})
+			for (var i in self.columns){
+				self.columns[i].length = 0;
+			}
+			//TODO: ensure that in columns mode real number of columns exists in DOM
+
+			//self.columns = self.container.children();
+			//columns.css({
+			//	"width": 100 / columns.length +"%",
+			//	"display": "inline-block",
+			//	"vertical-align": "top"
+			//})
+
 			return self;
 		},
 
@@ -156,52 +184,121 @@ Like masonry column shift, but works.
 			return '<div class="wf-column ' + (this.options.colClass || '')  + '"></div>';
 		},
 
+		//do not recount columns
+		_updateWidths: function(){
+			var self = this, o = self.options;
+			console.log("update widths")
+		},
+
 		//Redistributes items by columns
 		_refill: function () {
 			var self = this, o = self.options;
 
-			//for each item place it correctly
-			$.each(self.items, function (i, el) {
-				var $e = $(el),
-					col = $e.data("float") || $e.data("column");
+			self.colWidth = self.container.width() / self.columns.length;
+
+			//place each item in proper column
+			$.each(self.items, function (i, $e) {
+				var col = $e.data("float") || $e.data("column"),
+					span = $e.data("span");
+
+				span = span == "all" ? self.columns.length : Math.min( span || 1, self.columns.length);
+
 				if (col){
 					switch(col){
 						case "left":
 						case "first":
-							self.container.children().first().append($e)
+							self._insertToColumn(0, $e, span);
 							break;
-						case "right":
 						case "last":
-							self.container.children().last().append($e)
+							//console.log(i);
+							self._insertToColumn(self.columns.length - 1, $e, span);
+							break;							
+						case "right":
+							self._insertToColumn(self.columns.length - span, $e, span);
 							break;
 						default:
-							self.container.children().eq(Math.max(Math.min(col, self.container.children().length) - 1, 0)).append($e)
+							self._insertToColumn(Math.max(Math.min(col, self.columns.length) - 1, 0), $e, span);
 					}
 				} else {
-					self._getMinCol(self.container.children()).append($e);
+					self._insertToColumn(self._getMinCol(), $e, span);
 				}
 			})
+
+			self._maximizeContainerHeight();
 
 			return self;
 		},
 
+		_insertToColumn: function(colNum, $e, span) {
+			var self = this, o = self.options;
+
+			span = Math.min(self.columns.length - colNum, span);		
+
+			switch (o.mode){
+				case "floats":
+					break;
+				case "columns":
+					break;
+				default:
+					$e[0].style.left = self.colWidth * colNum + "px";
+					$e[0].style.width = self.colWidth * span + "px";
+					var maxCol = self._getMaxCol(self.columns.slice(colNum, colNum + span))
+					$e[0].style.top = self._getBottom(maxCol[maxCol.length - 1]) + "px";
+
+					for (var i = 0; i < span; i++){
+						self.columns[colNum + i].push($e);
+					}
+
+					break;
+			}
+		},
+
+		//get bottom of element
+		_getBottom: function($e) {
+			lastHeight = $e && parseInt($e[0].clientHeight) || 0,
+			lastTop = $e && parseInt($e[0].style.top) || 0;
+			return lastTop + lastHeight;
+		},
+
 		//returns column with minimal height
-		_getMinCol: function (cols) {
-			var minH = Infinity, minCol = cols.first(), minColNum = 0;
+		_getMinCol: function () {
+			var self = this, minH = Infinity, minCol = self.columns[0], minColNum = 0;
 
 			//fill min heights
-			cols.each(function (colNum, col){
-				var $col = $(col);
-
-				var h = $col.height();
+			for (var i = 0; i < self.columns.length; i++){
+				var $e = self.columns[i][self.columns[i].length - 1]
+				var h = self._getBottom($e);
 				if (h < minH) {
 					minH = h;
-					minColNum = colNum;
+					minColNum = i;
 				}
-			});
-
-			return cols.eq(minColNum);
+			}
+			return minColNum;
 		},
+
+		_maximizeContainerHeight: function(){
+			var self = this, maxH = 0, h = 0;
+			for (var i = self.columns.length; i--;){
+				h = self._getBottom(self.columns[i][self.columns[i].length - 1]);
+				if (h > maxH){
+					maxH = h;
+				}
+			}
+			self.container[0].style.height = maxH;
+		},
+
+		_getMaxCol: function(cols){
+			var self = this, maxH = 0, h = 0, maxColNum = 0;
+			for (var i = cols.length; i--;){
+				if (cols[i].length < 1) continue;
+				h = self._getBottom(cols[i][cols[i].length - 1]);
+				if (h > maxH){
+					maxH = h;
+					maxColNum = i;
+				}
+			}
+			return cols[maxColNum];
+		}
 		
 	})
 
