@@ -17,8 +17,7 @@ Like masonry column shift, but works.
 			defaultContainerWidth: $(window).width(),
 			colClass: null,
 			autoresize: true,
-			order: "waterfall", //TODO: columns order, like 
-			mode: "absolute" //TODO: floats, columns
+			order: "waterfall", //TODO: columns order, like
 		},
 
 		_create: function (opts) {
@@ -27,18 +26,18 @@ Like masonry column shift, but works.
 
 			self.container = self.element;
 
-			if (o.mode == "absolute"){
-				self.container[0].style.position = "relative";
-			}
+			self.container[0].style.height = self.container.css("height"); //prevent scrollbar width changing
+			if (self.container.css("position") === "static" ) self.container[0].style.position = "relative";
 
+			self.items = [];
 			self.columns = [[]]; //array of arrays of elements = waterfall model. Spanning elements may present in both ajacent arrays.
+			self.prevItems = {}; //map of itemId - [prevel1, prevel2, ..]
 
 			var colClass = o.colClass ? o.colClass : 'wf-column';
 			if (self.container.children().hasClass(colClass)) {
 				//Columns init — keep initial order of items
 				var cols = $('.' + colClass, self.container),
-					children = $('.' + colClass, self.container).children();				
-				self.items = [];
+					children = $('.' + colClass, self.container).children();
 				var i = 0, end = children.length * cols.length;
 				while (self.items.length < children.length && i < end) {
 					var el = cols.eq(i%3).children()[Math.floor(i/3)];
@@ -47,22 +46,21 @@ Like masonry column shift, but works.
 				}
 			} else {
 				//Items init
-				self.items = [];
 				self.container.children().each(function(i,e){
 					self.items.push($(e));
 				});
-			}
-
-			if (o.mode == "absolute"){				
-				for (var i = self.items.length; i--;){
-					self.items[i][0].style.position = "absolute";
-				}
 			}
 
 			self.lastItem = self.items[self.items.length-1]
 			self.firstItem = self.items[0]
 			
 			self._removeColumns();
+			
+			for (var i = self.items.length; i--;){
+				self.items[i].data("id", i);
+				self.items[i][0].style.position = "absolute";
+			}
+
 			o.colMinWidth = opts.colMinWidth || o.colMinWidth;
 
 			self.reflow();
@@ -84,12 +82,12 @@ Like masonry column shift, but works.
 		},
 		setOption: function (name, value) {
 			if (this.options) {this.options[name] = value;}
-			this._resetColumns().reflow();
+			this.reflow();
 			return this;
 		},
 		setOptions: function (opts) {
 			this.options = $.extend(this.options, opts);
-			this._resetColumns().reflow()
+			this.reflow()
 			return this;
 		},
 
@@ -98,13 +96,12 @@ Like masonry column shift, but works.
 			var self = this, o = self.options,
 				neededCols = self._countNeededColumns();
 
-			if (neededCols == self.columns.length) {
-				self._updateWidths();
-				return;
-			} //prevent recounting if columns enough
-
-			//$(self.items).detach();
-			self._ensureColumns(neededCols)._refill();
+			if (neededCols != self.columns.length) {
+				self._ensureColumns(neededCols)._redistribute();
+			} else {				
+				//$(self.items).detach();
+				self._updateSizes();
+			}
 
 			return self;
 		},
@@ -141,9 +138,7 @@ Like masonry column shift, but works.
 			var items = $(self.items);
 			items.detach();
 			self.container.children().remove();
-			if (o.mode == "absolute"){
-				self.container.append(self.items)
-			}	
+			self.container.append(self.items)
 			return self;
 		},
 
@@ -151,7 +146,6 @@ Like masonry column shift, but works.
 		_ensureColumns: function (num) {
 			var self = this, o = self.options
 				num = num || 1;
-				//columns = self.container.children();
 
 			if (self.columns.length < num) {
 				var str = '';
@@ -160,22 +154,10 @@ Like masonry column shift, but works.
 					//str += self._columnTpl();
 					self.columns.push([]);
 				}
-				//self.container.append(str);
+
 			} else if ( self.columns.length > num) {
 				self.columns.length = num;
 			}
-
-			for (var i in self.columns){
-				self.columns[i].length = 0;
-			}
-			//TODO: ensure that in columns mode real number of columns exists in DOM
-
-			//self.columns = self.container.children();
-			//columns.css({
-			//	"width": 100 / columns.length +"%",
-			//	"display": "inline-block",
-			//	"vertical-align": "top"
-			//})
 
 			return self;
 		},
@@ -184,25 +166,32 @@ Like masonry column shift, but works.
 			return '<div class="wf-column ' + (this.options.colClass || '')  + '"></div>';
 		},
 
-		//do not recount columns
-		_updateWidths: function(){
-			var self = this, o = self.options;
-			console.log("update widths")
+		_clearClasses: function(){
+			var self = this;
+			for (var i = 0; i < self.items.length; i++){
+				self.items[i].removeClass("column-last column-first column-" + self.items[i].data("colnum"))
+			}
 		},
 
 		//Redistributes items by columns
-		_refill: function () {
+		_redistribute: function () {
 			var self = this, o = self.options;
+			
+			for (var i = self.columns.length; i--;){
+				self.columns[i].length = 0;
+			}
 
-			self.colWidth = self.container.width() / self.columns.length;
+			self._clearClasses();
+
+			self.colWidth = self.container[0].clientWidth / self.columns.length;
 
 			//place each item in proper column
 			$.each(self.items, function (i, $e) {
 				var col = $e.data("float") || $e.data("column"),
 					span = $e.data("span");
 
-				span = span == "all" ? self.columns.length : Math.min( span || 1, self.columns.length);
-
+				span = (span == "all" ? self.columns.length : Math.min( span || 1, self.columns.length));
+				
 				if (col){
 					switch(col){
 						case "left":
@@ -222,7 +211,7 @@ Like masonry column shift, but works.
 				} else {
 					self._insertToColumn(self._getMinCol(), $e, span);
 				}
-			})
+			});
 
 			self._maximizeContainerHeight();
 
@@ -232,25 +221,50 @@ Like masonry column shift, but works.
 		_insertToColumn: function(colNum, $e, span) {
 			var self = this, o = self.options;
 
-			span = Math.min(self.columns.length - colNum, span);		
+			span = Math.min(self.columns.length - colNum, span);
 
-			switch (o.mode){
-				case "floats":
-					break;
-				case "columns":
-					break;
-				default:
-					$e[0].style.left = self.colWidth * colNum + "px";
-					$e[0].style.width = self.colWidth * span + "px";
-					var maxCol = self._getMaxCol(self.columns.slice(colNum, colNum + span))
-					$e[0].style.top = self._getBottom(maxCol[maxCol.length - 1]) + "px";
-
-					for (var i = 0; i < span; i++){
-						self.columns[colNum + i].push($e);
-					}
-
-					break;
+			self.prevItems[$e.data("id")] = self._getLastItems(colNum, colNum + span);
+			self._setItemPosition(colNum, $e, span);
+			
+			$e.data("colNum", colNum);
+			$e.addClass("column-" + colNum);
+			if (colNum == self.columns.length - 1){
+				$e.addClass("column-last")
+			} else if (colNum == 0){
+				$e.addClass("column-first")
 			}
+			if (span){
+				$e.addClass("span-"+span).data("spanNum", span);
+			}
+
+			for (var i = 0; i < span; i++){
+				self.columns[colNum + i].push($e);
+			}
+			
+		},
+
+		_setItemPosition: function(colNum, $e, span){
+			var self = this;
+			$e[0].style.left = self.colWidth * colNum + "px";
+			$e[0].style.width = self.colWidth * span + "px";
+			$e[0].style.top = self._getMaxHeight(self.prevItems[$e.data("id")]) + "px";
+		},
+
+		_updateSizes: function(){
+			var self = this, o = self.options;
+
+			self.colWidth = self.container[0].clientWidth / self.columns.length;
+
+			for (var i = 0; i < self.columns.length; i++){
+				for (var j = 0; j < self.columns[i].length; j++){
+					var $e = self.columns[i][j];
+					if ($e !== null) self._setItemPosition($e.data("colNum"), $e, $e.data("spanNum"));
+				}
+			}
+
+			self._maximizeContainerHeight();
+
+			return self;
 		},
 
 		//get bottom of element
@@ -266,7 +280,7 @@ Like masonry column shift, but works.
 
 			//fill min heights
 			for (var i = 0; i < self.columns.length; i++){
-				var $e = self.columns[i][self.columns[i].length - 1]
+				var $e = self.columns[i][self.columns[i].length - 1];
 				var h = self._getBottom($e);
 				if (h < minH) {
 					minH = h;
@@ -274,6 +288,29 @@ Like masonry column shift, but works.
 				}
 			}
 			return minColNum;
+		},
+
+		_getLastItems: function(a,b){
+			var self = this, items = [], start = a || 0, end = b || self.columns.length;
+			for (var i = start; i < end; i++){
+				var $e = self.columns[i][self.columns[i].length - 1]
+				items.push($e);
+			}
+			return items;
+		},
+
+		_getMaxHeight: function(items){
+			var self = this, maxH = 0, h = 0, maxColNum = 0;
+			
+			for (var i = items.length; i--;){
+				if (!items[i] || !items[i].length) continue;
+				h = self._getBottom(items[i]);
+				if (h > maxH){
+					maxH = h;
+					maxColNum = i;
+				}
+			}
+			return maxH;
 		},
 
 		_maximizeContainerHeight: function(){
@@ -286,19 +323,6 @@ Like masonry column shift, but works.
 			}
 			self.container[0].style.height = maxH;
 		},
-
-		_getMaxCol: function(cols){
-			var self = this, maxH = 0, h = 0, maxColNum = 0;
-			for (var i = cols.length; i--;){
-				if (cols[i].length < 1) continue;
-				h = self._getBottom(cols[i][cols[i].length - 1]);
-				if (h > maxH){
-					maxH = h;
-					maxColNum = i;
-				}
-			}
-			return cols[maxColNum];
-		}
 		
 	})
 
