@@ -1,4 +1,4 @@
-/*
+﻿/*
 Simple min-height-masonry layout plugin.
 Like masonry column shift, but works.
 */
@@ -12,13 +12,13 @@ Like masonry column shift, but works.
 
 	$.extend(Waterfall.prototype, {
 		options: {
-			itemSelector: null,
+			itemSelector: null, //TODO: ignore out-of-selector items as out-of-order
 			colMinWidth: 300,
-			defaultContainerWidth: $(window).width(),
+			defaultContainerWidth: window.clientWidth,
 			colClass: null,
 			autoresize: true,
-			order: "waterfall", //TODO: columns order, like
-			reflowDelay: 100
+			order: "waterfall", //TODO: columns order, like css3 columns
+			updateDelay: 50
 		},
 
 		_create: function (opts) {
@@ -52,6 +52,7 @@ Like masonry column shift, but works.
 					if (el) self.items.push(el);
 					i++;
 				}
+				self._removeColumns();
 			} else {
 				//Items init
 				//self.container.children().each(function(i,e){
@@ -62,9 +63,7 @@ Like masonry column shift, but works.
 
 			self.lastItem = self.items[self.items.length-1]
 			self.firstItem = self.items[0]
-			
-			self._removeColumns();
-			
+						
 			for (var i = self.items.length; i--;){
 				//self.items[i].data("id", i);
 				self.items[i].style.position = "absolute";
@@ -101,12 +100,12 @@ Like masonry column shift, but works.
 		},
 
 		//Ensures column number correct, reallocates items
-		_reflowInterval: 0,
+		_updateInterval: 0,
 		reflow: function () {
 			var self = this, o = self.options;
 
-			window.clearTimeout(self._reflowInterval);
-			self._reflowInterval = window.setTimeout(self._update.bind(self), o.reflowDelay);
+			window.clearTimeout(self._updateInterval);
+			self._updateInterval = window.setTimeout(self._update.bind(self), o.updateDelay);
 
 			return self;
 		},
@@ -135,12 +134,15 @@ Like masonry column shift, but works.
 			var self = this, o = self.options,
 				e = self.items[0], i = 0, 
 				lastItems = [], //last elements by columns
-				lastHeights = [0,0,0,0,0,0,0,0,0,0,0,0], //bottoms of last elements
-				colPriority = [0,1,2,3,4,5,6,7,8,9,10, 11], //most left = most minimal column. 
+				lastHeights = [self.pt,self.pt,self.pt,self.pt,self.pt,self.pt,self.pt,self.pt,self.pt,self.pt,self.pt,self.pt], //bottoms of last elements
+				colPriority = [0,1,2,3,4,5,6,7,8,9,10,11], //most left = most minimal column. 
 				lastMin = 0,
-				minCol = 0, minH = Number.MAX_VALUE, maxH = 0, h = 0, c = 0,
+				minCol = 0, maxH = 0, 
+				maxCol = 0, //Max column above
+				minH = 0, h = 0, c = 0, t = 0, end = 0, start = 0,
 				span = 1,
 				newH = 0,
+				spanCols = [],
 				colW = self.container[0].clientWidth - self.pl - self.pr,
 				style;
 
@@ -150,12 +152,53 @@ Like masonry column shift, but works.
 			colPriority.length = lastItems.length;
 
 			for (i = 0; i < self.items.length; i++){
-				e = self.items[i];			
+				e = self.items[i];
 				span = e.getAttribute("data-span") || 1;
-				span = (span === "all" ? lastItems.length : Math.min( span, lastItems.length));
+				span = (span === "all" ? lastItems.length : Math.min( Number(span), lastItems.length));
+				spanCols.length = 0;
 
-				minCol = colPriority.shift();
-				minH = self._getBottom(lastItems[minCol]);
+				//console.log("------ item"+i+": "+e.innerHTML)
+				//console.log(colPriority)
+				//console.log("span:"+span)
+				//console.log(spanCols)
+
+				//Find proper column to place item
+				//console.log(colPriority)
+				if (span === 1){
+					minCol = colPriority.shift();
+					spanCols.push(minCol);
+					minH = lastHeights[minCol];
+				} else if (span === lastItems.length){//Full-span element
+					minCol = 0;
+					minH = lastHeights[colPriority[colPriority.length - 1]];
+					spanCols = colPriority.slice();
+					colPriority.length = 0;
+				} else {
+					//Make span heights alternatives
+					var spanHeights = [];
+						minH = Infinity, minCol = 0;
+					for (c = 0; c < lastItems.length - span + 1; c++){
+						spanHeights[c] = Math.max.apply(Math, lastHeights.slice(c, c+span))
+						if (spanHeights[c] < minH){
+							minCol = c;
+							minH = spanHeights[c];
+						}
+					}
+
+					//Replace priorities
+					for (c = 0; c < colPriority.length; ){
+						if (colPriority[c] >= minCol && colPriority[c] < minCol + span){
+							spanCols.push(colPriority.splice(c, 1)[0])
+						} else {c++}
+					}
+
+				}
+
+				//console.log(spanCols)
+				//console.log("minCol:"+minCol+" minH:"+minH)
+				//console.log(lastHeights)
+
+				//console.log("↑ spanCols to ↓")
 
 				style = getComputedStyle(e);
 
@@ -163,57 +206,42 @@ Like masonry column shift, but works.
 				e.style.top = minH;
 				e.style.left = colW * minCol + self.pl;
 
-				lastItems[minCol] = e;
-				newH = Number(self._getBottom(e));
-				lastHeights[minCol] = newH;
+				newH = self._getBottom(e);
+				for (t = 0; t < spanCols.length; t++) {
+					lastItems[spanCols[t]] = e;
+					lastHeights[spanCols[t]] = newH;
+				}
+				//console.log(lastItems)
+				//console.log("↑ lastHeights to ↓")
+				//console.log(lastHeights)
+
+				//console.log(colPriority)
+				//console.log("↑ colPriorities to ↓")
 
 				//Update colPriority
 				for (c = colPriority.length; c--;){
-					h = Number(lastHeights[colPriority[c]]);
+					h = lastHeights[colPriority[c]];
 					if (newH >= h){
-						colPriority.splice(c+1,0,minCol);
+						Array.prototype.splice.apply(colPriority, [c+1,0].concat(spanCols));
 						break;
 					}
 				}
 				if (colPriority.length < lastHeights.length){
-					colPriority.push(minCol)
+					Array.prototype.unshift.apply(colPriority, spanCols)
 				}
+				//console.log(colPriority)
 			}
 
 			//Maximize height
 			self.container[0].style.height = lastHeights[colPriority[colPriority.length - 1]] + self.pb;
 		},
 
-		_getMaxHeight: function(items){
-			var self = this, maxH = self.pt, h = 0, maxColNum = 0;
-			
-			for (var i = items.length; i--;){
-				if (!items[i] || !items[i].length) continue;
-				h = self._getBottom(items[i]);
-				if (h > maxH){
-					maxH = h;
-					maxColNum = i;
-				}
-			}
-			return maxH;
-		},
-
-		//get bottom of element
 		_getBottom: function(e) {
 			if (!e) return this.pt;
 			var s = getComputedStyle(e);
-			return parseInt(s.top) + e.clientHeight + parseInt(s.marginTop) + parseInt(s.marginBottom);
+			return parseInt(s.top) + e.clientHeight + parseInt(s.marginTop) + parseInt(s.marginBottom) + parseInt(s.borderTop) + parseInt(s.borderBottom);
 		},
 
-		//calc needed number of columns
-		_countNeededColumns: function () {
-			var self = this, o = self.options;
-			return ~~((self.container.width() || o.defaultContainerWidth) / o.colMinWidth) || 1;
-		},
-
-
-
-		//Ensures that columns has correct classes etc
 		_removeColumns: function(){
 			var self = this, o = self.options;
 			var items = $(self.items);
@@ -222,38 +250,6 @@ Like masonry column shift, but works.
 			self.container.append(items)
 			return self;
 		},
-
-		_clearClasses: function(){
-			var self = this;
-			for (var i = 0; i < self.items.length; i++){
-				self.items[i].removeClass("wf-column-last wf-column-first wf-column-" + self.items[i].data("colNum"))
-			}
-		},
-
-		_insertToColumn: function(colNum, $e, span) {
-			var self = this, o = self.options;
-
-			span = Math.min(self.columns.length - colNum, span);
-
-			self.prevItems[$e.data("id")] = self._getLastItems(colNum, colNum + span);
-			self._setItemPosition(colNum, $e, span);
-			
-			$e.data("colNum", colNum);
-			$e.addClass("wf-column-" + colNum);
-			if (colNum == self.columns.length - 1){
-				$e.addClass("wf-column-last")
-			} else if (colNum == 0){
-				$e.addClass("wf-column-first")
-			}
-			if (span){
-				$e.addClass("wf-span-"+span).data("spanNum", span);
-			}
-
-			for (var i = 0; i < span; i++){
-				self.columns[colNum + i].push($e);
-			}
-			
-		}
 		
 	})
 

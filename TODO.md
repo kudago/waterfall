@@ -1,3 +1,7 @@
+* On add animate from bottom;
+
+* Fucks up layout if -webkit-animation top
+
 * Update only visible part on add, do not recalculate
 
 * Turn in mutation observer, refill automatically each time DOM changed.
