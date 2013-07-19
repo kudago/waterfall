@@ -30,7 +30,7 @@ Like masonry column shift, but works.
 			if (self.container.css("position") === "static" ) self.container[0].style.position = "relative";
 
 			self.items = [];
-			self.columns = [[]]; //array of arrays of elements = waterfall model. Spanning elements may present in both ajacent arrays.
+			self.columns = []; //array of arrays of elements = waterfall model. Spanning elements may present in both ajacent arrays.
 			self.prevItems = {}; //map of itemId - [prevel1, prevel2, ..]
 
 			var colClass = o.colClass ? o.colClass : 'wf-column';
@@ -113,12 +113,13 @@ Like masonry column shift, but works.
 			itemSet = $(itemSet);
 
 			itemSet.each(function (i, el) {
-				var $item = $(el);
-				self._getMinCol(cols).append($item);
-				self.items.push($item)
+				var $el = $(el).data("id", self.items.length).css("position","absolute");
+				self.items.push($el);
+				self.container.append($el)
 			})
 
-			self.lastItem = self.items[self.items.length-1]
+			self.lastItem = self.items[self.items.length-1];
+			self._redistribute();
 
 			return self;
 		},
@@ -279,8 +280,8 @@ Like masonry column shift, but works.
 		//get bottom of element
 		_getBottom: function($e) {
 			var self = this;
-			lastHeight = $e && (parseInt($e[0].clientHeight)) || 0,
-			lastTop = ($e && parseInt($e[0].style.top)) || 0;
+			lastHeight = $e && $e[0].clientHeight || 0,
+			lastTop = $e && parseInt($e[0].style.top) || 0;
 			return lastTop + lastHeight + ($e && (parseInt($e.css("margin-bottom")) + parseInt($e.css("margin-top"))) || 0);
 		},
 
