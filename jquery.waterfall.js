@@ -18,6 +18,7 @@ Like masonry column shift, but works.
 			colClass: null,
 			autoresize: true,
 			order: "waterfall", //TODO: columns order, like
+			reflowDelay: 100
 		},
 
 		_create: function (opts) {
@@ -100,10 +101,12 @@ Like masonry column shift, but works.
 		},
 
 		//Ensures column number correct, reallocates items
+		_reflowInterval: 0,
 		reflow: function () {
 			var self = this, o = self.options;
 
-			self._update();
+			window.clearTimeout(self._reflowInterval);
+			self._reflowInterval = window.setTimeout(self._update.bind(self), o.reflowDelay);
 
 			return self;
 		},
