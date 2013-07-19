@@ -1,3 +1,7 @@
+* Throttle update method (with the image.load will be useful too)
+
+* Update only visible part on add, do not recalculate
+
 * Turn in mutation observer, refill automatically each time DOM changed.
 
 * Speed up appending of elements. Too slow for now.
