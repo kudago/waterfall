@@ -1,9 +1,5 @@
 * Turn in mutation observer, refill automatically each time DOM changed.
 
-* Position: absolute mode
-
-* Make position: absolute insteadof columns.
-
 * Speed up appending of elements. Too slow for now.
 
 * BUG: sometimes pastes improperly, at the bottom there is one column higher that others. Deferred image loading?
@@ -14,7 +10,6 @@
 
 * Floats mode (no columns at all)
 
-* Spanning items: span2, span3 etc, like table-cells.
 * Equal columns height
 * Fix up scrolling on reflow
 * Fixed-width floating aside column

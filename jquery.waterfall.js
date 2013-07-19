@@ -169,8 +169,17 @@ Like masonry column shift, but works.
 		_clearClasses: function(){
 			var self = this;
 			for (var i = 0; i < self.items.length; i++){
-				self.items[i].removeClass("column-last column-first column-" + self.items[i].data("colnum"))
+				self.items[i].removeClass("wf-column-last wf-column-first wf-column-" + self.items[i].data("colNum"))
 			}
+		},
+
+		_calcColWidth: function(){
+			var self = this;			
+			self.pl = parseInt(self.container.css("padding-left"))
+			self.pt = parseInt(self.container.css("padding-top"))
+			self.pr = parseInt(self.container.css("padding-right"))
+			self.pb = parseInt(self.container.css("padding-bottom"))
+			self.colWidth = (self.container.innerWidth() - self.pl - self.pr) / self.columns.length;
 		},
 
 		//Redistributes items by columns
@@ -183,7 +192,7 @@ Like masonry column shift, but works.
 
 			self._clearClasses();
 
-			self.colWidth = self.container[0].clientWidth / self.columns.length;
+			self._calcColWidth();
 
 			//place each item in proper column
 			$.each(self.items, function (i, $e) {
@@ -191,7 +200,7 @@ Like masonry column shift, but works.
 					span = $e.data("span");
 
 				span = (span == "all" ? self.columns.length : Math.min( span || 1, self.columns.length));
-				
+
 				if (col){
 					switch(col){
 						case "left":
@@ -227,14 +236,14 @@ Like masonry column shift, but works.
 			self._setItemPosition(colNum, $e, span);
 			
 			$e.data("colNum", colNum);
-			$e.addClass("column-" + colNum);
+			$e.addClass("wf-column-" + colNum);
 			if (colNum == self.columns.length - 1){
-				$e.addClass("column-last")
+				$e.addClass("wf-column-last")
 			} else if (colNum == 0){
-				$e.addClass("column-first")
+				$e.addClass("wf-column-first")
 			}
 			if (span){
-				$e.addClass("span-"+span).data("spanNum", span);
+				$e.addClass("wf-span-"+span).data("spanNum", span);
 			}
 
 			for (var i = 0; i < span; i++){
@@ -245,15 +254,15 @@ Like masonry column shift, but works.
 
 		_setItemPosition: function(colNum, $e, span){
 			var self = this;
-			$e[0].style.left = self.colWidth * colNum + "px";
-			$e[0].style.width = self.colWidth * span + "px";
+			$e[0].style.left = self.colWidth * colNum + self.pl + "px";
+			$e[0].style.width = self.colWidth * span - parseInt($e.css("margin-right"))- parseInt($e.css("margin-left")) + "px";
 			$e[0].style.top = self._getMaxHeight(self.prevItems[$e.data("id")]) + "px";
 		},
 
 		_updateSizes: function(){
 			var self = this, o = self.options;
 
-			self.colWidth = self.container[0].clientWidth / self.columns.length;
+			self._calcColWidth();
 
 			for (var i = 0; i < self.columns.length; i++){
 				for (var j = 0; j < self.columns[i].length; j++){
@@ -269,9 +278,10 @@ Like masonry column shift, but works.
 
 		//get bottom of element
 		_getBottom: function($e) {
-			lastHeight = $e && parseInt($e[0].clientHeight) || 0,
-			lastTop = $e && parseInt($e[0].style.top) || 0;
-			return lastTop + lastHeight;
+			var self = this;
+			lastHeight = $e && (parseInt($e[0].clientHeight)) || 0,
+			lastTop = ($e && parseInt($e[0].style.top)) || 0;
+			return lastTop + lastHeight + ($e && (parseInt($e.css("margin-bottom")) + parseInt($e.css("margin-top"))) || 0);
 		},
 
 		//returns column with minimal height
@@ -300,7 +310,7 @@ Like masonry column shift, but works.
 		},
 
 		_getMaxHeight: function(items){
-			var self = this, maxH = 0, h = 0, maxColNum = 0;
+			var self = this, maxH = self.pt, h = 0, maxColNum = 0;
 			
 			for (var i = items.length; i--;){
 				if (!items[i] || !items[i].length) continue;
@@ -321,7 +331,7 @@ Like masonry column shift, but works.
 					maxH = h;
 				}
 			}
-			self.container[0].style.height = maxH;
+			self.container[0].style.height = maxH + self.pb;
 		},
 		
 	})
