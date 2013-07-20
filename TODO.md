@@ -1,6 +1,6 @@
-* On add animate from bottom;
+* On `add` - animate from bottom of the screen
 
-* Fucks up layout if -webkit-animation top
+* BUG: Fucks up layout if -webkit-animation top
 
 * Update only visible part on add, do not recalculate
 
@@ -8,20 +8,16 @@
 
 * Speed up appending of elements. Too slow for now.
 
-* BUG: sometimes pastes improperly, at the bottom there is one column higher that others. Deferred image loading?
+* Deferred image loading of new elements.
 
-* Scroll only visible part (mode)
+* Scroll only visible part
 
 * Specified number of columns, e.g. 2,4,6. No 3.
 
-* Floats mode (no columns at all)
+* Keep viewport scrolling on reflow
 
-* Equal columns height
-* Fix up scrolling on reflow
 * Fixed-width floating aside column
-* Think of margins between columns
 * Correct reflow when inner element size changed
 * Displacement as on gplus when new item added.
-* When images loaded, reflow
-* Test simultaneous float or colnumber with prerender
-* Make position-tracking, as if I wanted to fix some element on top of column.
+* Test float elements with prerender mode
+* Keep position(order) tracking, e.g. if I want to fix some element on top of column

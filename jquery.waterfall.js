@@ -143,8 +143,10 @@ Like masonry column shift, but works.
 				span = 1,
 				newH = 0,
 				spanCols = [],
+				spanHeights = [],
 				colW = self.container[0].clientWidth - self.pl - self.pr,
-				style;
+				style,
+				float, floatCol = 0;
 
 			lastItems.length = ~~(colW / o.colMinWidth) || 1; //needed length
 			lastHeights.length = lastItems.length;
@@ -154,18 +156,46 @@ Like masonry column shift, but works.
 			for (i = 0; i < self.items.length; i++){
 				e = self.items[i];
 				span = e.getAttribute("data-span") || 1;
-				span = (span === "all" ? lastItems.length : Math.min( Number(span), lastItems.length));
+				span = (span === "all" ? lastItems.length : Math.max(0,Math.min( Number(span), lastItems.length)));
 				spanCols.length = 0;
 
-				//console.log("------ item"+i+": "+e.innerHTML)
+				console.log("------ item"+i+": "+e.innerHTML)
 				//console.log(colPriority)
 				//console.log("span:"+span)
 				//console.log(spanCols)
 
+				float = e.getAttribute("data-float") || e.getAttribute("data-column");
+				switch (float){
+					case null: //no float
+						floatCol = null;
+						break;
+					case "right":
+					case "last":
+						floatCol = lastHeights.length - span;
+						break;
+					case "left":
+					case "first":
+						floatCol = 0;
+						break;
+					default: //int column
+						floatCol = Math.max(Math.min(lastHeights.length - span, parseInt(float)), 0);
+						break;
+				}
+
 				//Find proper column to place item
 				//console.log(colPriority)
-				if (span === 1){
-					minCol = colPriority.shift();
+				if (span === 1){//Simple element
+					if (float){
+						minCol = floatCol;
+						for (c = 0; c < colPriority.length; c++){
+							if (colPriority[c] == minCol){
+								colPriority.splice(c, 1);
+								break;
+							}
+						}
+					} else {
+						minCol = colPriority.shift();
+					}
 					spanCols.push(minCol);
 					minH = lastHeights[minCol];
 				} else if (span === lastItems.length){//Full-span element
@@ -173,30 +203,35 @@ Like masonry column shift, but works.
 					minH = lastHeights[colPriority[colPriority.length - 1]];
 					spanCols = colPriority.slice();
 					colPriority.length = 0;
-				} else {
-					//Make span heights alternatives
-					var spanHeights = [];
-						minH = Infinity, minCol = 0;
-					for (c = 0; c < lastItems.length - span + 1; c++){
-						spanHeights[c] = Math.max.apply(Math, lastHeights.slice(c, c+span))
-						if (spanHeights[c] < minH){
-							minCol = c;
-							minH = spanHeights[c];
+				} else {//Some-span element
+					if (float){
+						minCol = floatCol;
+						minH = Math.max.apply(Math, lastHeights.slice(minCol, minCol + span));
+						//console.log(lastHeights.slice(minCol, span))
+						//console.log("fCol:" + floatCol + " minH: " + minH)
+					} else {
+						//Make span heights alternatives
+						spanHeights.length = 0;
+						minH = Infinity; minCol = 0;
+						for (c = 0; c <= lastItems.length - span; c++){
+							spanHeights[c] = Math.max.apply(Math, lastHeights.slice(c, c+span))
+							if (spanHeights[c] < minH){
+								minCol = c;
+								minH = spanHeights[c];
+							}
 						}
 					}
-
 					//Replace priorities
 					for (c = 0; c < colPriority.length; ){
 						if (colPriority[c] >= minCol && colPriority[c] < minCol + span){
 							spanCols.push(colPriority.splice(c, 1)[0])
 						} else {c++}
 					}
-
 				}
 
 				//console.log(spanCols)
 				//console.log("minCol:"+minCol+" minH:"+minH)
-				//console.log(lastHeights)
+				console.log(lastHeights)
 
 				//console.log("↑ spanCols to ↓")
 
@@ -212,8 +247,8 @@ Like masonry column shift, but works.
 					lastHeights[spanCols[t]] = newH;
 				}
 				//console.log(lastItems)
-				//console.log("↑ lastHeights to ↓")
-				//console.log(lastHeights)
+				console.log("↑ lastHeights to ↓")
+				console.log(lastHeights)
 
 				//console.log(colPriority)
 				//console.log("↑ colPriorities to ↓")
