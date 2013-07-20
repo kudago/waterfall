@@ -33,9 +33,24 @@
 	.item:nth-child(2n+1){
 		height: 140px
 	}
+	.add{
+		position: fixed;
+		right: 10px;
+		top: 10px;
+	}
+	.add.dfd{
+		margin-top: 60px;
+	}
+	.add.raw{
+		margin-top: 30px;
+	}
 </style>
 
-<div class="container waterfall" data-width="120">
+<button class="add">Add  3</button>
+<button class="add raw">Add raw 3</button>
+<button class="add dfd">Add deferred 3</button>
+
+<div class="container" data-width="120">
 	<div class="wf-column">
 		<div class="item" data-span="2" data-column="1">Header col-2</div>
 		<div class="item">1</div>
@@ -73,3 +88,13 @@
 <script>window.jQuery || document.write('<script src="../js/zepto.js"><\/script>')</script>
 
 <script src="../jquery.waterfall.js"></script>
+
+<script>
+$(function(){
+	var wf = $(".container").waterfall();
+
+	$(".add").click(function(){
+		console.log(wf.items)
+	})
+})
+</script>

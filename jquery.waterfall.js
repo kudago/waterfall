@@ -23,7 +23,7 @@ Like masonry column shift, but works.
 
 		_create: function (opts) {
 			var self = this,
-			o = self.options = $.extend({}, self.options, opts),
+			o = self.options = $.extend({}, self.options, opts);
 
 			cStyle = getComputedStyle(self.container[0]);
 
@@ -68,8 +68,6 @@ Like masonry column shift, but works.
 				//self.items[i].data("id", i);
 				self.items[i].style.position = "absolute";
 			}
-
-			o.colMinWidth = opts.colMinWidth || o.colMinWidth;
 
 			self._update();
 
@@ -159,7 +157,7 @@ Like masonry column shift, but works.
 				span = (span === "all" ? lastItems.length : Math.max(0,Math.min( Number(span), lastItems.length)));
 				spanCols.length = 0;
 
-				console.log("------ item"+i+": "+e.innerHTML)
+				//console.log("------ item"+i+": "+e.innerHTML)
 				//console.log(colPriority)
 				//console.log("span:"+span)
 				//console.log(spanCols)
@@ -231,7 +229,7 @@ Like masonry column shift, but works.
 
 				//console.log(spanCols)
 				//console.log("minCol:"+minCol+" minH:"+minH)
-				console.log(lastHeights)
+				//console.log(lastHeights)
 
 				//console.log("↑ spanCols to ↓")
 
@@ -247,8 +245,8 @@ Like masonry column shift, but works.
 					lastHeights[spanCols[t]] = newH;
 				}
 				//console.log(lastItems)
-				console.log("↑ lastHeights to ↓")
-				console.log(lastHeights)
+				//console.log("↑ lastHeights to ↓")
+				//console.log(lastHeights)
 
 				//console.log(colPriority)
 				//console.log("↑ colPriorities to ↓")
@@ -295,10 +293,14 @@ Like masonry column shift, but works.
 				$(el).data("waterfall")[arg](arg2);
 			})
 		} else {
-			return $(this).each(function (i, el) {
-				var wf = new Waterfall(el, arg);
-				if (!$(el).data("waterfall")) $(el).data("waterfall", wf);
-			})			
+			var $this = $(this),
+			opts = $.extend({},$.parseDataAttributes(this[0]),arg);
+			if (opts.width && !opts.colMinWidth) {
+				opts.colMinWidth = opts.width
+			}
+			var wf = new Waterfall($this, opts);
+			if (!$this.data("waterfall")) $this.data("waterfall", wf);
+			return wf;
 		}
 	}
 
@@ -323,18 +325,15 @@ Like masonry column shift, but works.
 		}
 	}
 
-
+	//autostart
 	$(function () {
 		var defClass = window.waterfall && window.waterfall.defaultClass || Waterfall.defaultClass;
 
 		$("." + defClass).each(function (i, e){
-				var $e = $(e),
-					opts = $.extend(window.waterfall || {}, $.parseDataAttributes(e));
-					if (opts.width && !opts.colMinWidth) {
-						opts.colMinWidth = opts.width
-					}
-				$e.waterfall(opts);
-			});
-		})
+			var $e = $(e),
+				opts = window.waterfall || {};
+			$e.waterfall(opts);
+		});
+	})
 
 })(window.jQuery || window.Zepto);
