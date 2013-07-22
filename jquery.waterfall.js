@@ -30,15 +30,15 @@ Like masonry column shift, but works.
 			var self = this,
 			o = self.options = $.extend({}, self.options, opts);
 
-			cStyle = getComputedStyle(self.container[0]);
+			//init some vars
+			self.lastHeights = [];
+			self.lastItems = [];
+			self.colPriority = []; //most left = most minimal column
+			self.baseOrder = [];
 
+			cStyle = getComputedStyle(self.container[0]);
 			self.container[0].style.minHeight = cStyle.height; //prevent scrollbar width changing
 			if (self.container.css("position") === "static" ) self.container[0].style.position = "relative";
-
-			self.pl = parseInt(cStyle["padding-left"])
-			self.pt = parseInt(cStyle["padding-top"])
-			self.pr = parseInt(cStyle["padding-right"])
-			self.pb = parseInt(cStyle["padding-bottom"])
 
 			var colClass = o.colClass ? o.colClass : 'wf-column';
 			if (self.container.children().hasClass(colClass)) {
@@ -117,36 +117,39 @@ Like masonry column shift, but works.
 			//console.log("Time elapsed: " + (Date.now() - t) + "ms");
 
 			itemSet = $(itemSet);
+			var df = document.createDocumentFragment();
 
-			itemSet.each(function (i, el) {
-				var $el = $(el),
-					dfdShow = dfdShow || o.waitLoad && $el.find("img, iframe, object").length;
-
+			//prepare elements
+			var top = self.lastHeights[self.colPriority[self.colPriority.length - 1]] + "px";
+			itemSet.each(function(i,el){
 				el.style.position = "absolute";
+				el.style.top = top;
+				self.items.push(el);
+				df.appendChild(el);
+			})
+
+			self.container[0].appendChild(df);
+			self.lastItem = self.items[self.items.length-1];
+
+			//Correct elements
+			var scrollBottom = $doc.scrollTop() + $wnd.height();
+			itemSet.each(function (i, el) {
+				var	dfdShow = dfdShow || o.waitLoad && el.querySelector("img, iframe, object");
 
 				if (dfdShow){
-					var displace = $doc.scrollTop() + $wnd.height() - $el.offset().top;
+					var displace = scrollBottom - el.offsetTop;
 					el.style["-webkit-transform"] = "translate(0, " + displace + "px)";
-				}
-
-				self.container.append(el);
-				self.items.push(el);
-
-				if (dfdShow){ //TODO: what another elements could have `load` event?
-					$el.find("img").load(function(e){
+					$(el).find("img").load(function(e){
 						self._placeItem(el);
 						el.style["-webkit-transition"] = "-webkit-transform .5s";
 						el.style["-webkit-transform"] = "translate(0, 0px)";
 						self._maximizeHeight();
-						cb && cb();
-						$el.trigger("show");
 					})
 				} else {
 					self._placeItem(el);
 					self._maximizeHeight();
 				}
 			})
-			self.lastItem = self.items[self.items.length-1];
 
 			return self;
 		},
@@ -154,19 +157,32 @@ Like masonry column shift, but works.
 
 		//========================= Techs
 		_initVars: function(){
-			var self = this, o = self.options;
+			var self = this, o = self.options,
+				cStyle = getComputedStyle(self.container[0]),
+				i = 0;
 
-			self.lastHeights = [self.pt,self.pt,self.pt,self.pt,self.pt,self.pt,self.pt,self.pt,self.pt,self.pt,self.pt,self.pt];
+			self.pl = ~~(cStyle["padding-left"].slice(0,-2));
+			self.pt = ~~(cStyle["padding-top"].slice(0, -2));
+			self.pr = ~~(cStyle["padding-right"].slice(0, -2));
+			self.pb = ~~(cStyle["padding-bottom"].slice(0, -2));
+
+			self.lastHeights.length = 0;
 			self.lastItems = [];
-			self.colPriority = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]; //most left = most minimal column
-			self.baseOrder = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15];
+			self.colPriority.length = 0; //most left = most minimal column
+			self.baseOrder.length = 0;
+			self.lastHeights.length = 0;
 
-			self.colWidth = self.container[0].clientWidth - self.pl - self.pr,
+			self.colWidth = self.container[0].clientWidth - self.pl - self.pr;
 
 			self.lastItems.length = ~~(self.colWidth / o.colMinWidth) || 1; //needed length
-			self.lastHeights.length = self.lastItems.length;
+
+			for (i = 0; i < self.lastItems.length; i++){
+				self.lastHeights.push(self.pt);
+				self.baseOrder.push(i);
+				self.colPriority.push(i);
+			}
+
 			self.colWidth /= self.lastItems.length;
-			self.colPriority.length = self.lastItems.length;
 		},
 
 		//full update of layout
@@ -203,7 +219,7 @@ Like masonry column shift, but works.
 				floatCol = 0;
 
 			span = e.getAttribute("data-span") || 1;
-			span = (span === "all" ? lastItems.length : Math.max(0,Math.min( Number(span), lastItems.length)));
+			span = (span === "all" ? lastItems.length : Math.max(0,Math.min( ~~(span), lastItems.length)));
 			spanCols.length = 0;
 
 			//console.log("------ item")
@@ -215,51 +231,51 @@ Like masonry column shift, but works.
 					break;
 				case "right":
 				case "last":
-					floatCol = self.lastHeights.length - span;
+					floatCol = lastHeights.length - span;
 					break;
 				case "left":
 				case "first":
 					floatCol = 0;
 					break;
 				default: //int column
-					floatCol = Math.max(Math.min(self.lastHeights.length - span, parseInt(float)), 0);
+					floatCol = Math.max(Math.min(lastHeights.length - span, ~~(float)), 0);
 					break;
 			}
 
 			//Find proper column to place item
-			//console.log(self.colPriority)
+			//console.log(colPriority)
 			if (span === 1){//Simple element
 				if (float){
 					minCol = floatCol;
-					for (c = 0; c < self.colPriority.length; c++){
-						if (self.colPriority[c] == minCol){
-							self.colPriority.splice(c, 1);
+					for (c = 0; c < colPriority.length; c++){
+						if (colPriority[c] == minCol){
+							colPriority.splice(c, 1);
 							break;
 						}
 					}
 				} else {
-					minCol = self.colPriority.shift();
+					minCol = colPriority.shift();
 				}
 				spanCols.push(minCol);
-				minH = self.lastHeights[minCol];
+				minH = lastHeights[minCol];
 			} else if (span === lastItems.length){//Full-span element
 				minCol = 0;
-				minH = self.lastHeights[self.colPriority[self.colPriority.length - 1]];
+				minH = lastHeights[colPriority[colPriority.length - 1]];
 				spanCols = self.baseOrder.slice();
-				spanCols.length = self.lastHeights.length;
-				self.colPriority.length = 0;
+				spanCols.length = lastHeights.length;
+				colPriority.length = 0;
 			} else {//Some-span element
 				if (float){
 					minCol = floatCol;
-					minH = Math.max.apply(Math, self.lastHeights.slice(minCol, minCol + span));
-					//console.log(self.lastHeights.slice(minCol, span))
+					minH = Math.max.apply(Math, lastHeights.slice(minCol, minCol + span));
+					//console.log(lastHeights.slice(minCol, span))
 					//console.log("fCol:" + floatCol + " minH: " + minH)
 				} else {
 					//Make span heights alternatives
 					spanHeights.length = 0;
 					minH = Infinity; minCol = 0;
 					for (c = 0; c <= lastItems.length - span; c++){
-						spanHeights[c] = Math.max.apply(Math, self.lastHeights.slice(c, c+span))
+						spanHeights[c] = Math.max.apply(Math, lastHeights.slice(c, c+span))
 						if (spanHeights[c] < minH){
 							minCol = c;
 							minH = spanHeights[c];
@@ -267,58 +283,60 @@ Like masonry column shift, but works.
 					}
 				}
 				//Replace priorities
-				for (c = 0; c < self.colPriority.length; ){
-					if (self.colPriority[c] >= minCol && self.colPriority[c] < minCol + span){
-						spanCols.push(self.colPriority.splice(c, 1)[0])
+				for (c = 0; c < colPriority.length; ){
+					if (colPriority[c] >= minCol && colPriority[c] < minCol + span){
+						spanCols.push(colPriority.splice(c, 1)[0])
 					} else {c++}
 				}
 			}
 
 			//console.log(spanCols)
-			//console.log(self.lastHeights)
-
+			//console.log(lastHeights)
 			//console.log("↑ spanCols to ↓")
 
 			style = getComputedStyle(e);
-			e.style.width = self.colWidth * span - parseInt(style.marginRight) - parseInt(style.marginLeft) + "px";
-			e.style.top = minH + "px";
-			e.style.left = self.colWidth * minCol + self.pl + "px";
 
-			newH = self._getBottom(e);
+			//self.itemHMargins =  + ;
+			e.style.width = self.colWidth * span - ~~(style["margin-right"].slice(0, -2)) - ~~(style["margin-left"].slice(0, -2));
+			e.style.top = minH;
+			e.style.left = self.colWidth * minCol + self.pl;
+
+			newH = self._getBottom(e); //this is the most difficult operation (e.clientHeight)
 			for (t = 0; t < spanCols.length; t++) {
 				lastItems[spanCols[t]] = e;
 				self.lastHeights[spanCols[t]] = newH;
 			}
+
 			//console.log(lastItems)
 			//console.log("↑ self.lastHeights to ↓")
 			//console.log(self.lastHeights)
 			//console.log("minCol:"+minCol+" minH:"+minH+" newH:"+newH)
-
-			//console.log(self.colPriority)
+			//console.log(colPriority)
 			//console.log("↑ colPriorities to ↓")
 
-			//Update self.colPriority
-			for (c = self.colPriority.length; c--;){
-				h = self.lastHeights[self.colPriority[c]];
+			//Update colPriority
+			for (c = colPriority.length; c--;){
+				h = self.lastHeights[colPriority[c]];
 				if (newH >= h){
-					Array.prototype.splice.apply(self.colPriority, [c+1,0].concat(spanCols));
+					Array.prototype.splice.apply(colPriority, [c+1,0].concat(spanCols));
 					break;
 				}
 			}
-			if (self.colPriority.length < self.lastHeights.length){
-				Array.prototype.unshift.apply(self.colPriority, spanCols)
+			if (colPriority.length < lastHeights.length){
+				Array.prototype.unshift.apply(colPriority, spanCols)
+				//self.colPriority = spanCols.concat(colPriority)
 			}
 		},
 
 		_getBottom: function(e) {
 			if (!e) return this.pt;
-			var s = getComputedStyle(e);
-			return 	(parseInt(s.top) || 0)
+			var itemStyle = getComputedStyle(e);
+			return e.offsetTop 
 					+ e.clientHeight
-					+ (parseInt(s.marginTop) || 0)
-					+ (parseInt(s.marginBottom) || 0)
-					+ (parseInt(s.borderTop) || 0)
-					+ (parseInt(s.borderBottom) || 0);
+					+ ~~(itemStyle["border-top"].slice(0, -2)) 
+					+ ~~(itemStyle["border-bottom"].slice(0, -2))
+					//+ ~~(itemStyle["margin-top"].slice(0, -2)) //ignored because of offsetTop instead of style.top
+					+ ~~(itemStyle["margin-bottom"].slice(0, -2)); 
 		},
 
 		_removeColumns: function(){
@@ -331,8 +349,7 @@ Like masonry column shift, but works.
 		},
 
 		_maximizeHeight: function(){
-			var self = this;
-			self.container.css("min-height", self.lastHeights[self.colPriority[self.colPriority.length - 1]] + self.pb);
+			this.container[0].style["min-height"] = this.lastHeights[this.colPriority[this.colPriority.length - 1]] + this.pb;
 		}
 		
 	})

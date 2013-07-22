@@ -1,3 +1,9 @@
+* Make full equivalent to css-columns
+
+* Test on jquery sequential image-loading along with non-image elements (as header inside content)
+
+* Optimize add method: massive elements inserting way too slow
+
 * On `add` - animate from bottom of the screen
 
 * BUG: Fucks up layout if -webkit-animation top

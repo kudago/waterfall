@@ -13,11 +13,12 @@
 		color: white;
 		border-radius: 8px;
 		height: 125px;
-		margin:0 20px 0 0;
+		margin:5px 5px 5px;
 		font-weight: bolder;
 		font-size: 20px;
 		text-align: center;
 		line-height: 40px;
+		border: none;
 	}
 	.container{
 		width: 40%;
@@ -43,11 +44,15 @@
 	.add.raw{
 		margin-top: 30px;
 	}
+	.add.massive{
+		margin-top: 90px;
+	}
 </style>
 
 <button class="add simple">Add  3</button>
 <button class="add raw">Add raw 3</button>
 <button class="add dfd">Add deferred 3</button>
+<button class="add massive">Add deferred 50</button>
 
 <div class="container" data-width="120">
 	<div class="wf-column">
@@ -107,6 +112,21 @@ $(function(){
 			}.bind($e), 500 + Math.random()* 1000);
 		})
 		wf.add(items, true);
+	})
+
+	$(".add.massive").click(function(){
+		var items = ""
+		for (var i = 0; i < 100; i++){
+			items += getNewItem();
+		}
+		var $items = $(items);
+		$items.each(function(i, e){
+			var $e = $(e);		
+			setTimeout(function(){
+				this.trigger("load");
+			}.bind($e), 500 + Math.random()* 1000);
+		})
+		wf.add($items, true);
 	})
 
 
