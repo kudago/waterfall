@@ -13,7 +13,7 @@
 		color: white;
 		border-radius: 8px;
 		height: 125px;
-		margin:4px;
+		margin:0 20px 0 0;
 		font-weight: bolder;
 		font-size: 20px;
 		text-align: center;
@@ -95,19 +95,18 @@ $(function(){
 	var wf = $(".container").waterfall();
 
 	$(".add.simple").click(function(){
-		wf.add(getNewItem());
-		wf.add(getNewItem());
-		wf.add(getNewItem());
+		wf.add(getNewItem() + getNewItem() + getNewItem());
 	})
 
 	$(".add.dfd").click(function(){
-		for (var i = 0 ; i < 3; i++){
-			item = getNewItem();
+		items = $(getNewItem() + getNewItem() + getNewItem());
+		items.each(function(i, e){
+			var $e = $(e);		
 			setTimeout(function(){
-				this.children().trigger("load");
-			}.bind(item), 500 + Math.random()* 1000);
-			wf.add(item, true);
-		}
+				this.trigger("load");
+			}.bind($e), 500 + Math.random()* 1000);
+		})
+		wf.add(items, true);
 	})
 
 
@@ -116,10 +115,10 @@ $(function(){
 		span = Math.round(Math.random() * 3);
 		float = Math.round(Math.random() * 1.5 - .75);
 		floatText = float > 0 ? "right" : "left"; 
-		var res = $('<div class="item" ' 
+		var res = '<div class="item" ' 
 					+ (span ? ('data-span="' + span + '" ') : '') 
 					+ (float ? ('data-float="' + floatText + '" ') : '') 
-					+ '>' + idx + ' ' + (float ? floatText : '') + '<div class="img"></div></div>');
+					+ '>' + idx + ' ' + (float ? floatText : '') + '<div class="img"></div></div>';
 		return res;
 	}
 })

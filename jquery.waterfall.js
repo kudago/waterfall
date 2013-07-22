@@ -32,7 +32,7 @@ Like masonry column shift, but works.
 
 			cStyle = getComputedStyle(self.container[0]);
 
-			self.container[0].style.height = cStyle.height; //prevent scrollbar width changing
+			self.container[0].style.minHeight = cStyle.height; //prevent scrollbar width changing
 			if (self.container.css("position") === "static" ) self.container[0].style.position = "relative";
 
 			self.pl = parseInt(cStyle["padding-left"])
@@ -109,33 +109,44 @@ Like masonry column shift, but works.
 		},
 
 		//Inserts new item(s)
-		add: function (itemSet, dfdShow) {
+		add: function (itemSet, dfdShow, cb) {
 			var self = this, o = self.options;
+
+			//Profile this shit on multiple leements
+			//var t = Date.now();
+			//console.log("Time elapsed: " + (Date.now() - t) + "ms");
 
 			itemSet = $(itemSet);
 
 			itemSet.each(function (i, el) {
-				var $el = $(el);
+				var $el = $(el),
+					dfdShow = dfdShow || o.waitLoad && $el.find("img, iframe, object").length;
+
 				el.style.position = "absolute";
+
+				if (dfdShow){
+					var displace = $doc.scrollTop() + $wnd.height() - $el.offset().top;
+					el.style["-webkit-transform"] = "translate(0, " + displace + "px)";
+				}
 
 				self.container.append(el);
 				self.items.push(el);
-				self._placeItem(el);
 
-				if (o.waitLoad && $el.find("img, iframe, object").length || dfdShow){ //TODO: what another elements could have `load` event?
-					var displace = $wnd.scrollTop() + $wnd.height() - $el.offset().top;
-					el.style["-webkit-transform"] = "translate(0, 50px)";
-
-					$el.on("load", function(e){
+				if (dfdShow){ //TODO: what another elements could have `load` event?
+					$el.find("img").load(function(e){
+						self._placeItem(el);
 						el.style["-webkit-transition"] = "-webkit-transform .5s";
 						el.style["-webkit-transform"] = "translate(0, 0px)";
+						self._maximizeHeight();
+						cb && cb();
+						$el.trigger("show");
 					})
+				} else {
+					self._placeItem(el);
+					self._maximizeHeight();
 				}
 			})
-
 			self.lastItem = self.items[self.items.length-1];
-
-			self._maximizeHeight();
 
 			return self;
 		},
@@ -195,10 +206,8 @@ Like masonry column shift, but works.
 			span = (span === "all" ? lastItems.length : Math.max(0,Math.min( Number(span), lastItems.length)));
 			spanCols.length = 0;
 
-			//console.log("------ item"+i+": "+e.innerHTML)
-			//console.log(self.colPriority)
+			//console.log("------ item")
 			//console.log("span:"+span)
-			//console.log(spanCols)
 
 			switch (float){
 				case null: //no float
@@ -266,16 +275,14 @@ Like masonry column shift, but works.
 			}
 
 			//console.log(spanCols)
-			//console.log("minCol:"+minCol+" minH:"+minH)
 			//console.log(self.lastHeights)
 
 			//console.log("↑ spanCols to ↓")
 
 			style = getComputedStyle(e);
-
-			e.style.width = self.colWidth * span - parseInt(style.marginRight) - parseInt(style.marginLeft);
-			e.style.top = minH;
-			e.style.left = self.colWidth * minCol + self.pl;
+			e.style.width = self.colWidth * span - parseInt(style.marginRight) - parseInt(style.marginLeft) + "px";
+			e.style.top = minH + "px";
+			e.style.left = self.colWidth * minCol + self.pl + "px";
 
 			newH = self._getBottom(e);
 			for (t = 0; t < spanCols.length; t++) {
@@ -285,6 +292,7 @@ Like masonry column shift, but works.
 			//console.log(lastItems)
 			//console.log("↑ self.lastHeights to ↓")
 			//console.log(self.lastHeights)
+			//console.log("minCol:"+minCol+" minH:"+minH+" newH:"+newH)
 
 			//console.log(self.colPriority)
 			//console.log("↑ colPriorities to ↓")
@@ -300,13 +308,17 @@ Like masonry column shift, but works.
 			if (self.colPriority.length < self.lastHeights.length){
 				Array.prototype.unshift.apply(self.colPriority, spanCols)
 			}
-			//console.log(self.colPriority)
 		},
 
 		_getBottom: function(e) {
 			if (!e) return this.pt;
 			var s = getComputedStyle(e);
-			return parseInt(s.top) + e.clientHeight + parseInt(s.marginTop) + parseInt(s.marginBottom) + parseInt(s.borderTop) + parseInt(s.borderBottom);
+			return 	(parseInt(s.top) || 0)
+					+ e.clientHeight
+					+ (parseInt(s.marginTop) || 0)
+					+ (parseInt(s.marginBottom) || 0)
+					+ (parseInt(s.borderTop) || 0)
+					+ (parseInt(s.borderBottom) || 0);
 		},
 
 		_removeColumns: function(){
@@ -320,7 +332,7 @@ Like masonry column shift, but works.
 
 		_maximizeHeight: function(){
 			var self = this;
-			self.container[0].style.height = self.lastHeights[self.colPriority[self.colPriority.length - 1]] + self.pb;
+			self.container.css("min-height", self.lastHeights[self.colPriority[self.colPriority.length - 1]] + self.pb);
 		}
 		
 	})
