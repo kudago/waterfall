@@ -74,6 +74,18 @@ Like masonry column shift, but works.
 			if (o.autoresize) {
 				$(window).resize(self.reflow.bind(self))
 			}
+
+			//observe changes in container by default
+			self.container.on("DOMNodeInserted", function(e){
+				//console.log(e.originalEvent)
+				var el = e.originalEvent.target;
+
+				el.style.position = "absolute";
+				el.style.top = self.lastHeights[self.colPriority[self.colPriority.length - 1]];				
+				self.lastItem = self.items.push(el);
+
+				self._initItem(el);
+			})
 		},
 
 
@@ -112,10 +124,6 @@ Like masonry column shift, but works.
 		add: function (itemSet, dfdShow, cb) {
 			var self = this, o = self.options;
 
-			//Profile this shit on multiple leements
-			//var t = Date.now();
-			//console.log("Time elapsed: " + (Date.now() - t) + "ms");
-
 			itemSet = $(itemSet);
 			var df = document.createDocumentFragment();
 
@@ -131,6 +139,16 @@ Like masonry column shift, but works.
 			self.container[0].appendChild(df);
 			self.lastItem = self.items[self.items.length-1];
 
+			self._initItem();
+
+			return self;
+		},
+
+		_initItem: function(itemSet){
+			var self = this, o = self.options;
+
+			itemSet = $(itemSet);
+			
 			//Correct elements
 			var scrollBottom = $doc.scrollTop() + $wnd.height();
 			itemSet.each(function (i, el) {
@@ -150,8 +168,6 @@ Like masonry column shift, but works.
 					self._maximizeHeight();
 				}
 			})
-
-			return self;
 		},
 
 

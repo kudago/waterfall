@@ -39,20 +39,20 @@
 		top: 10px;
 	}
 	.add.dfd{
-		margin-top: 60px;
-	}
-	.add.raw{
 		margin-top: 30px;
 	}
-	.add.massive{
+	.add.raw{
 		margin-top: 90px;
+	}
+	.add.massive{
+		margin-top: 60px;
 	}
 </style>
 
 <button class="add simple">Add  3</button>
-<button class="add raw">Add raw 3</button>
 <button class="add dfd">Add deferred 3</button>
-<button class="add massive">Add deferred 50</button>
+<button class="add massive">Add deferred 100</button>
+<button class="add raw">Add raw 100</button>
 
 <div class="container" data-width="120">
 	<div class="wf-column">
@@ -115,6 +115,7 @@ $(function(){
 	})
 
 	$(".add.massive").click(function(){
+		var t = Date.now()
 		var items = ""
 		for (var i = 0; i < 100; i++){
 			items += getNewItem();
@@ -127,6 +128,28 @@ $(function(){
 			}.bind($e), 500 + Math.random()* 1000);
 		})
 		wf.add($items, true);
+		console.log(Date.now() - t + "ms")
+	})
+
+	$(".add.raw").click(function(){
+		var t = Date.now()
+		var df = document.createDocumentFragment(),
+			div = document.createElement("div"),
+			items = "";
+
+		for (var i = 0; i < 100; i++){
+			items += getNewItem();
+		}
+
+		div.innerHTML = items;
+		var ch = div.children;
+
+		for (var i = 0; i < ch.length; i++){
+			df.appendChild(ch[i])
+		}
+
+		wf.container[0].appendChild(df);
+		console.log(Date.now() - t + "ms")
 	})
 
 
