@@ -15,10 +15,9 @@
 		height: 125px;
 		margin:4px;
 		font-weight: bolder;
-		font-size: 25px;
+		font-size: 20px;
 		text-align: center;
-		line-height: 60px;
-		/*-webkit-transition: left .1s linear;*/
+		line-height: 40px;
 	}
 	.container{
 		width: 40%;
@@ -28,10 +27,10 @@
 	}
 
 	.item:nth-child(2n){
-		height: 90px
+		height: 40px
 	}
 	.item:nth-child(2n+1){
-		height: 140px
+		height: 70px
 	}
 	.add{
 		position: fixed;
@@ -46,7 +45,7 @@
 	}
 </style>
 
-<button class="add">Add  3</button>
+<button class="add simple">Add  3</button>
 <button class="add raw">Add raw 3</button>
 <button class="add dfd">Add deferred 3</button>
 
@@ -95,22 +94,32 @@ $(function(){
 
 	var wf = $(".container").waterfall();
 
-	$(".add").click(function(){
+	$(".add.simple").click(function(){
 		wf.add(getNewItem());
 		wf.add(getNewItem());
 		wf.add(getNewItem());
+	})
+
+	$(".add.dfd").click(function(){
+		for (var i = 0 ; i < 3; i++){
+			item = getNewItem();
+			setTimeout(function(){
+				this.children().trigger("load");
+			}.bind(item), 500 + Math.random()* 1000);
+			wf.add(item, true);
+		}
 	})
 
 
 	function getNewItem(){
 		idx++;
 		span = Math.round(Math.random() * 3);
-		float = Math.round(Math.random() * 2 - 1);
+		float = Math.round(Math.random() * 1.5 - .75);
 		floatText = float > 0 ? "right" : "left"; 
-		var res = 	'<div class="item" ' 
+		var res = $('<div class="item" ' 
 					+ (span ? ('data-span="' + span + '" ') : '') 
 					+ (float ? ('data-float="' + floatText + '" ') : '') 
-					+ '>Item ' + idx + '</div>';
+					+ '>' + idx + ' ' + (float ? floatText : '') + '<div class="img"></div></div>');
 		return res;
 	}
 })

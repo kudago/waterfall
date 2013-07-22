@@ -3,6 +3,10 @@ Simple min-height-masonry layout plugin.
 Like masonry column shift, but works.
 */
 ;(function ($){
+	var $wnd = $(window),
+		$doc = $(window.document),
+		$body = $(window.document.body);
+
 	var Waterfall = function (el, opts){
 		this.container = $(el);
 		this._create(opts)
@@ -18,7 +22,8 @@ Like masonry column shift, but works.
 			colClass: null,
 			autoresize: true,
 			order: "waterfall", //TODO: columns order, like css3 columns
-			updateDelay: 50
+			updateDelay: 50,
+			waitLoad: true //whether to show new items after load images inside
 		},
 
 		_create: function (opts) {
@@ -104,16 +109,28 @@ Like masonry column shift, but works.
 		},
 
 		//Inserts new item(s)
-		add: function (itemSet) {
+		add: function (itemSet, dfdShow) {
 			var self = this, o = self.options;
 
 			itemSet = $(itemSet);
 
 			itemSet.each(function (i, el) {
+				var $el = $(el);
 				el.style.position = "absolute";
+
 				self.container.append(el);
 				self.items.push(el);
 				self._placeItem(el);
+
+				if (o.waitLoad && $el.find("img, iframe, object").length || dfdShow){ //TODO: what another elements could have `load` event?
+					var displace = $wnd.scrollTop() + $wnd.height() - $el.offset().top;
+					el.style["-webkit-transform"] = "translate(0, 50px)";
+
+					$el.on("load", function(e){
+						el.style["-webkit-transition"] = "-webkit-transform .5s";
+						el.style["-webkit-transform"] = "translate(0, 0px)";
+					})
+				}
 			})
 
 			self.lastItem = self.items[self.items.length-1];
