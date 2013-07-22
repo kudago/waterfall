@@ -148,7 +148,7 @@ Like masonry column shift, but works.
 			var self = this, o = self.options;
 
 			itemSet = $(itemSet);
-			
+
 			//Correct elements
 			var scrollBottom = $doc.scrollTop() + $wnd.height();
 			itemSet.each(function (i, el) {
@@ -349,8 +349,8 @@ Like masonry column shift, but works.
 			var itemStyle = getComputedStyle(e);
 			return e.offsetTop 
 					+ e.clientHeight
-					+ ~~(itemStyle["border-top"].slice(0, -2)) 
-					+ ~~(itemStyle["border-bottom"].slice(0, -2))
+					+ ~~(itemStyle["border-top-width"].slice(0, -2)) 
+					+ ~~(itemStyle["border-bottom-width"].slice(0, -2))
 					//+ ~~(itemStyle["margin-top"].slice(0, -2)) //ignored because of offsetTop instead of style.top
 					+ ~~(itemStyle["margin-bottom"].slice(0, -2)); 
 		},
