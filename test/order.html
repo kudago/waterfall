@@ -106,7 +106,8 @@ $(function(){
 	$(".add.dfd").click(function(){
 		items = $(getNewItem() + getNewItem() + getNewItem());
 		items.each(function(i, e){
-			var $e = $(e);		
+			var $e = $(e);
+			$e.attr("data-waitload", true);
 			setTimeout(function(){
 				this.trigger("load");
 			}.bind($e), 500 + Math.random()* 1000);

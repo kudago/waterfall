@@ -75,16 +75,17 @@ Like masonry column shift, but works.
 				$(window).resize(self.reflow.bind(self))
 			}
 
-			//observe changes in container by default
+			//observe changes in container by default — the fastest way to append elements
 			self.container.on("DOMNodeInserted", function(e){
 				//console.log(e.originalEvent)
-				var el = e.originalEvent.target;
+				var el = (e.originalEvent || e).target,
+					waitLoad = !!el.getAttribute("data-waitload")
 
 				el.style.position = "absolute";
 				el.style.top = self.lastHeights[self.colPriority[self.colPriority.length - 1]];				
 				self.lastItem = self.items.push(el);
 
-				self._initItem(el);
+				self._initItem(el, waitLoad);
 			})
 		},
 
@@ -120,7 +121,7 @@ Like masonry column shift, but works.
 			return self;
 		},
 
-		//Inserts new item(s)
+		//Inserts new item(s). @deprecated — use pure DOM instead
 		add: function (itemSet, dfdShow, cb) {
 			var self = this, o = self.options;
 
@@ -144,25 +145,25 @@ Like masonry column shift, but works.
 			return self;
 		},
 
-		_initItem: function(itemSet){
+		_initItem: function(itemSet, waitLoad){
 			var self = this, o = self.options;
 
 			itemSet = $(itemSet);
 
 			//Correct elements
-			var scrollBottom = $doc.scrollTop() + $wnd.height();
+			var scrollBottom = $wnd[0].innerHeight + $doc.scrollTop();
 			itemSet.each(function (i, el) {
-				var	dfdShow = dfdShow || o.waitLoad && el.querySelector("img, iframe, object");
+				var	dfdShow = waitLoad || o.waitLoad;
 
 				if (dfdShow){
+					self._placeItem(el);
 					var displace = scrollBottom - el.offsetTop;
 					el.style["-webkit-transform"] = "translate(0, " + displace + "px)";
-					$(el).find("img").load(function(e){
-						self._placeItem(el);
+					$(el).one("load", function(e){
 						el.style["-webkit-transition"] = "-webkit-transform .5s";
 						el.style["-webkit-transform"] = "translate(0, 0px)";
 						self._maximizeHeight();
-					})
+					});
 				} else {
 					self._placeItem(el);
 					self._maximizeHeight();
