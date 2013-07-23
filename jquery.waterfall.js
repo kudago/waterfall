@@ -77,13 +77,13 @@ Like masonry column shift, but works.
 
 			//observe changes in container by default — the fastest way to append elements
 			self.container.on("DOMNodeInserted", function(e){
-				//console.log(e.originalEvent)
 				var el = (e.originalEvent || e).target,
 					waitLoad = !!el.getAttribute("data-waitload")
 
 				el.style.position = "absolute";
-				el.style.top = self.lastHeights[self.colPriority[self.colPriority.length - 1]];				
-				self.lastItem = self.items.push(el);
+				el.style.top = self.lastHeights[self.colPriority[self.colPriority.length - 1]] + "px";				
+				self.items.push(el);
+				self.lastItem = self.items[self.items.length - 1]
 
 				self._initItem(el, waitLoad);
 			})
@@ -120,31 +120,7 @@ Like masonry column shift, but works.
 
 			return self;
 		},
-
-		//Inserts new item(s). @deprecated — use pure DOM instead
-		add: function (itemSet, dfdShow, cb) {
-			var self = this, o = self.options;
-
-			itemSet = $(itemSet);
-			var df = document.createDocumentFragment();
-
-			//prepare elements
-			var top = self.lastHeights[self.colPriority[self.colPriority.length - 1]] + "px";
-			itemSet.each(function(i,el){
-				el.style.position = "absolute";
-				el.style.top = top;
-				self.items.push(el);
-				df.appendChild(el);
-			})
-
-			self.container[0].appendChild(df);
-			self.lastItem = self.items[self.items.length-1];
-
-			self._initItem();
-
-			return self;
-		},
-
+		
 		_initItem: function(itemSet, waitLoad){
 			var self = this, o = self.options;
 
@@ -153,16 +129,29 @@ Like masonry column shift, but works.
 			//Correct elements
 			var scrollBottom = $wnd[0].innerHeight + $doc.scrollTop();
 			itemSet.each(function (i, el) {
-				var	dfdShow = waitLoad || o.waitLoad;
+				var	dfdShow = waitLoad || o.waitLoad && el.querySelector("img");
 
 				if (dfdShow){
 					self._placeItem(el);
 					var displace = scrollBottom - el.offsetTop;
 					el.style["-webkit-transform"] = "translate(0, " + displace + "px)";
-					$(el).one("load", function(e){
+					el.style["-moz-transform"] = "translate(0, " + displace + "px)";
+					el.style["-o-transform"] = "translate(0, " + displace + "px)";
+					el.style["-ms-transform"] = "translate(0, " + displace + "px)";
+					el.style["transform"] = "translate(0, " + displace + "px)";
+					$("img", el).one("load", function(e){
 						el.style["-webkit-transition"] = "-webkit-transform .5s";
 						el.style["-webkit-transform"] = "translate(0, 0px)";
+						el.style["-moz-transition"] = "-moz-transform .5s";
+						el.style["-moz-transform"] = "translate(0, 0px)";
+						el.style["-ms-transition"] = "-ms-transform .5s";
+						el.style["-ms-transform"] = "translate(0, 0px)";
+						el.style["-o-transition"] = "-o-transform .5s";
+						el.style["-o-transform"] = "translate(0, 0px)";
+						el.style["transition"] = "transform .5s";
+						el.style["transform"] = "translate(0, 0px)";
 						self._maximizeHeight();
+						$(el).trigger("load");
 					});
 				} else {
 					self._placeItem(el);
@@ -175,13 +164,13 @@ Like masonry column shift, but works.
 		//========================= Techs
 		_initVars: function(){
 			var self = this, o = self.options,
-				cStyle = getComputedStyle(self.container[0]),
+				cStyle = window.getComputedStyle(self.container[0]),
 				i = 0;
 
-			self.pl = ~~(cStyle["padding-left"].slice(0,-2));
-			self.pt = ~~(cStyle["padding-top"].slice(0, -2));
-			self.pr = ~~(cStyle["padding-right"].slice(0, -2));
-			self.pb = ~~(cStyle["padding-bottom"].slice(0, -2));
+			self.pl = ~~(cStyle.paddingLeft.slice(0,-2));
+			self.pt = ~~(cStyle.paddingTop.slice(0, -2));
+			self.pr = ~~(cStyle.paddingRight.slice(0, -2));
+			self.pb = ~~(cStyle.paddingBottom.slice(0, -2));
 
 			self.lastHeights.length = 0;
 			self.lastItems = [];
@@ -314,9 +303,9 @@ Like masonry column shift, but works.
 			style = getComputedStyle(e);
 
 			//self.itemHMargins =  + ;
-			e.style.width = self.colWidth * span - ~~(style["margin-right"].slice(0, -2)) - ~~(style["margin-left"].slice(0, -2));
-			e.style.top = minH;
-			e.style.left = self.colWidth * minCol + self.pl;
+			e.style.width = self.colWidth * span - ~~(style.marginRight.slice(0, -2)) - ~~(style.marginLeft.slice(0, -2)) + "px";
+			e.style.top = minH + "px";
+			e.style.left = self.colWidth * minCol + self.pl + "px";
 
 			newH = self._getBottom(e); //this is the most difficult operation (e.clientHeight)
 			for (t = 0; t < spanCols.length; t++) {
@@ -350,10 +339,10 @@ Like masonry column shift, but works.
 			var itemStyle = getComputedStyle(e);
 			return e.offsetTop 
 					+ e.clientHeight
-					+ ~~(itemStyle["border-top-width"].slice(0, -2)) 
-					+ ~~(itemStyle["border-bottom-width"].slice(0, -2))
+					+ ~~(itemStyle.borderTopWidth.slice(0, -2)) 
+					+ ~~(itemStyle.borderBottomWidth.slice(0, -2))
 					//+ ~~(itemStyle["margin-top"].slice(0, -2)) //ignored because of offsetTop instead of style.top
-					+ ~~(itemStyle["margin-bottom"].slice(0, -2)); 
+					+ ~~(itemStyle.marginBottom.slice(0, -2)); 
 		},
 
 		_removeColumns: function(){
@@ -366,7 +355,7 @@ Like masonry column shift, but works.
 		},
 
 		_maximizeHeight: function(){
-			this.container[0].style["min-height"] = this.lastHeights[this.colPriority[this.colPriority.length - 1]] + this.pb;
+			this.container[0].style.minHeight = this.lastHeights[this.colPriority[this.colPriority.length - 1]] + this.pb + "px";
 		}
 		
 	})

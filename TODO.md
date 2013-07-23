@@ -1,3 +1,5 @@
+* Finish up deferreds (fix zepto/jquery bad behaviour, test for nested images)
+
 * Make full equivalent to css-columns
 
 * Test on jquery sequential image-loading along with non-image elements (as header inside content)
