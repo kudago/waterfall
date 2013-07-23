@@ -100,7 +100,7 @@ $(function(){
 	var wf = $(".container").waterfall();
 
 	$(".add.simple").click(function(){
-		wf.add(getNewItem() + getNewItem() + getNewItem());
+		wf.container.append($(getNewItem() + getNewItem() + getNewItem()));
 	})
 
 	$(".add.dfd").click(function(){
@@ -112,7 +112,7 @@ $(function(){
 				this.trigger("load");
 			}.bind($e), 500 + Math.random()* 1000);
 		})
-		wf.add(items, true);
+		wf.container.append(items)
 	})
 
 	$(".add.massive").click(function(){

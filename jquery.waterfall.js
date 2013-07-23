@@ -77,8 +77,11 @@ Like masonry column shift, but works.
 
 			//observe changes in container by default — the fastest way to append elements
 			self.container.on("DOMNodeInserted", function(e){
-				var el = (e.originalEvent || e).target,
-					waitLoad = !!el.getAttribute("data-waitload")
+				var el = (e.originalEvent || e).target;
+
+				if (el.nodeType !== 1) return;
+				
+				var waitLoad = !!el.getAttribute("data-waitload")
 
 				el.style.position = "absolute";
 				el.style.top = self.lastHeights[self.colPriority[self.colPriority.length - 1]] + "px";				
@@ -115,8 +118,9 @@ Like masonry column shift, but works.
 		reflow: function () {
 			var self = this, o = self.options;
 
-			window.clearTimeout(self._updateInterval);
-			self._updateInterval = window.setTimeout(self._update.bind(self), o.updateDelay);
+			if (!self._updateInterval){
+				self._updateInterval = window.setTimeout(self._update.bind(self), o.updateDelay);
+			}
 
 			return self;
 		},
@@ -133,6 +137,7 @@ Like masonry column shift, but works.
 
 				if (dfdShow){
 					self._placeItem(el);
+					self._maximizeHeight();
 					var displace = scrollBottom - el.offsetTop;
 					el.style["-webkit-transform"] = "translate(0, " + displace + "px)";
 					el.style["-moz-transform"] = "translate(0, " + displace + "px)";
@@ -150,7 +155,6 @@ Like masonry column shift, but works.
 						el.style["-o-transform"] = "translate(0, 0px)";
 						el.style["transition"] = "transform .5s";
 						el.style["transform"] = "translate(0, 0px)";
-						self._maximizeHeight();
 						$(el).trigger("load");
 					});
 				} else {
@@ -198,6 +202,8 @@ Like masonry column shift, but works.
 				i = 0,
 				start = from || 0,
 				end = to || self.items.length;
+
+			self._updateInterval = null;
 
 			self._initVars();
 
