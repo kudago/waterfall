@@ -1,3 +1,16 @@
+* Correct chrome rounding of item offsets
+
+* Use translate-3d and calc, if possible. If not - use simple absolute positioning.
+
+* BUG: data-col-width fails to read
+
+* BUG: fix case where there’s only three items, but pasteable 4 columns (footer in kudago)
+	* Min-col-num property, max-col-num
+
+* Restrict max columns number
+
+* Move out animations to the css
+
 * Finish up deferreds (fix zepto/jquery bad behaviour, test for nested images)
 
 * Make full equivalent to css-columns
