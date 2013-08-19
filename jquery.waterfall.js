@@ -20,7 +20,7 @@ Like masonry column shift, but works.
 		options: {
 			colMinWidth: 300,
 			defaultContainerWidth: window.clientWidth,
-			colClass: null,
+			itemSelector: null,
 			autoresize: true,
 			order: "waterfall", //TODO: columns order, like css3 columns
 			maxCols: 16,
@@ -42,6 +42,7 @@ Like masonry column shift, but works.
 			o = self.options = $.extend({}, self.options, opts);
 
 			this.evSuffix = "." + o.evSuffix;
+			this.items = [];
 
 			//init some vars
 			self.lastHeights = [];
@@ -51,32 +52,27 @@ Like masonry column shift, but works.
 
 			var cStyle = getComputedStyle(self.el);
 			self.el.style.minHeight = cStyle.height; //prevent scrollbar width changing
-			if (self.$el.css("position") === "static" ) self.el.style.position = "relative";
+			if (self.$el.css("position") === "static" ) self.el.style.position = "relative";			
 
-			var colClass = o.colClass ? o.colClass : 'wf-column';
-			if (self.$el.children().hasClass(colClass)) {
-				self.items = []
-				//Columns init — keep initial order of items
-				var cols = $('.' + colClass, self.$el),
-					children = $('.' + colClass, self.$el).children();
-				var i = 0, end = children.length * cols.length;
-				while (self.items.length < children.length && i < end) {
-					var el = cols.eq(i%3).children()[Math.floor(i/3)];
-					if (el) self.items.push(el);
-					i++;
-				}
-				self._removeColumns();
+			//populate items
+			var items;
+			if (o.itemSelector){
+				items = self.$el.find(o.itemSelector);
+				items.detach();
+				self.$el.children().remove();
+				self.$el.append(items)
 			} else {
-				self.items = self.el.children;
-			}
+				items = self.$el.children();
+			} 
+						
+			items.each(function(i, e){
+				//self.items[i].data("id", i);
+				self.items.push(e);
+				self._initItem(e);
+			})
 
 			self.lastItem = self.items[self.items.length-1]
 			self.firstItem = self.items[0]
-						
-			for (var i = self.items.length; i--;){
-				//self.items[i].data("id", i);
-				self._initItem(self.items[i]);
-			}
 
 			//self._trigger('initItems', self.items);
 
@@ -88,30 +84,16 @@ Like masonry column shift, but works.
 		
 			//Make Node changing observer - the fastest way to add items
 			this.observer = new MutationObserver(function(mutations){
-				//console.log(mutations)
-				var addedNodes = Array.prototype.slice.apply(mutations[0].addedNodes),
-					l = addedNodes.length;
-				for (var i = 0; i < l; i++ ){
-					var el = addedNodes[i];
-					if (el.nodeType !== 1) continue;
-					self.items.push(el);
-					this._initItem(el); //TODO: optimize					
-					if (o.animateShow) {
-						if (o.useTranslate3d){
-							//TODO: this below crashes on chrome
-							//el.style[cssPrefix+"translate"] = "translate3d(0, " + this.lastHeights[this.colPriority[0]] + "px ,0)"
-						} else {
-							el.style.top = this.lastHeights[this.colPriority[this.colPriority.length-1]] + "px";
-							el.style.left = this.colWidth * this.colPriority[this.colPriority.length-1] + "px";							
-						}
-						el.removeAttribute("hidden");
+				var mNum = mutations.length;
+				for (var i = 0; i < mNum; i++){
+					if (mutations[i].removedNodes.length){
+						this._removedItems(Array.prototype.slice.apply(mutations[i].removedNodes))
+					}
+					if (mutations[i].addedNodes.length){
+						this._addedItems(Array.prototype.slice.apply(mutations[i].addedNodes))
 					}
 				}
-				for (var i = 0; i < l; i++){
-					this._placeItem(addedNodes[i])
-				}
-				self.lastItem = self.items[self.items.length - 1];
-				this._maximizeHeight();
+
 			}.bind(this));
 
 			this.observer.observe(this.el, { 
@@ -125,7 +107,6 @@ Like masonry column shift, but works.
 
 		//==========================API
 		//Ensures column number correct, reallocates items
-		_updateInterval: 0,
 		reflow: function () {
 			var self = this, o = self.options;
 
@@ -136,6 +117,42 @@ Like masonry column shift, but works.
 		},
 
 		//========================= Techs
+		//called by mutation observer
+		_addedItems: function(items){
+			var o = this.options, l = items.length;
+			for (var i = 0; i < l; i++ ){
+				var el = items[i];
+				if (el.nodeType !== 1) continue;
+				this.items.push(el);
+				this._initItem(el); //TODO: optimize
+			}
+
+			for (var i = 0; i < l; i++){
+				this._placeItem(items[i])
+			}
+
+			this.lastItem = this.items[this.items.length - 1];
+
+			this._maximizeHeight();
+		},
+
+		//called by mutation observer
+		_removedItems: function(items){
+			var l = items.length,
+				childItems = this.el.childNodes,
+				cl = childItems.length;
+			
+			//reinit items
+			this.items.length = 0;
+			for (var i = 0; i < cl; i++){
+				if (childItems[i] !== 1 ) continue;
+				this.items.push(childItems[i]);
+			}			
+			this.lastItem = this.items[this.items.length - 1];
+
+			this._update();
+		},
+
 		//simple trigger routine
 		_trigger: function(cbName, arg){
 			try {
@@ -185,6 +202,17 @@ Like masonry column shift, but works.
 					el.floatCol = ~~(float) - 1;
 					break;
 			}
+
+			if (o.animateShow) {
+				if (o.useTranslate3d){
+					//TODO: this below crashes chrome
+					//el.style[cssPrefix+"translate"] = "translate3d(0, " + this.lastHeights[this.colPriority[0]] + "px ,0)"
+				} else {
+					el.style.top = this.lastHeights[this.colPriority[this.colPriority.length-1]] + "px";
+					el.style.left = this.colWidth * this.colPriority[this.colPriority.length-1] + "px";							
+				}
+				el.removeAttribute("hidden");
+			}
 		},
 
 		_initLayoutParams: function(){
@@ -227,6 +255,7 @@ Like masonry column shift, but works.
 		},
 
 		//full update of layout
+		_updateInterval: 0,
 		_update: function(from, to){
 			//window.start = Date.now()
 			var self = this, o = self.options,
@@ -384,15 +413,6 @@ Like masonry column shift, but works.
 			if (!e) return 0//this.pt;
 			//TODO: memrize height, look for height change to avoid reflow
 			return e.top + e.clientHeight + e.bt + e.bb + e.mb + e.mt;
-		},
-
-		_removeColumns: function(){
-			var self = this, o = self.options;
-			var items = $(self.items);
-			items.detach();
-			self.$el.children().remove();
-			self.$el.append(items)
-			return self;
 		},
 
 		_maximizeHeight: function(){
