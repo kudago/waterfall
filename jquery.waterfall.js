@@ -27,8 +27,8 @@ Like masonry column shift, but works.
 			updateDelay: 25,
 			maximizeHeightInterval: 20,
 			evSuffix: "waterfall",
-			useCalc: true, //TODO: test if acceptable
-			useTranslate3d: true, //TODO: the same as above
+			useCalc: undefined, //set width through calc value: true, false, undefined - autodetection
+			useTranslate3d: undefined, //true, false, undefined - autodetection
 			animateShow: false, //whether to animate appending items
 
 			itemInserted: null, //before set item position
@@ -52,7 +52,26 @@ Like masonry column shift, but works.
 
 			var cStyle = getComputedStyle(self.el);
 			self.el.style.minHeight = cStyle.height; //prevent scrollbar width changing
-			if (self.$el.css("position") === "static" ) self.el.style.position = "relative";			
+			if (self.$el.css("position") === "static" ) self.el.style.position = "relative";
+
+			//detect placing mode needed
+			if (o.useCalc === undefined){
+				this.calcPrefix = (function(){
+					//modernizr-snippet
+					var dummy = document.createElement('div');
+					var props = ['calc', '-webkit-calc', '-moz-calc', '-o-calc'];
+					for (var i=0; i<props.length; ++i) {
+						var prop = props[i];
+						dummy.style.cssText = 'width:' + prop + '(1px);';
+						if (dummy.style.length)
+							return prop;
+					}
+				})();
+				o.useCalc = !!this.calcPrefix;
+			}
+			if (o.useTranslate3d === undefined){
+				o.useTranslate3d = !!detectCSSPrefix("transform")
+			}
 
 			//populate items
 			var items;
@@ -82,28 +101,41 @@ Like masonry column shift, but works.
 				$(window).resize(self.reflow.bind(self))
 			}
 		
-			//Make Node changing observer - the fastest way to add items
-			this.observer = new MutationObserver(function(mutations){
-				var mNum = mutations.length;
-				for (var i = 0; i < mNum; i++){
-					if (mutations[i].removedNodes.length){
-						this._removedItems(Array.prototype.slice.apply(mutations[i].removedNodes))
-					}
-					if (mutations[i].addedNodes.length){
-						this._addedItems(Array.prototype.slice.apply(mutations[i].addedNodes))
-					}
-				}
-
-			}.bind(this));
-
-			this.observer.observe(this.el, { 
-				attributes: false, 
-				childList: true, 
-				characterData: false 
-			});
+			this._observeMutations();
 		},
 
+		_observeMutations: function(){
+			//Make Node changing observer - the fastest way to add items
+			if (window.MutationObserver) {
+				//FF, chrome
+				this.observer = new MutationObserver(function(mutations){
+					var mNum = mutations.length;
+					for (var i = 0; i < mNum; i++){
+						if (mutations[i].removedNodes.length){
+							this._removedItems(Array.prototype.slice.apply(mutations[i].removedNodes))
+						}
+						if (mutations[i].addedNodes.length){
+							this._addedItems(Array.prototype.slice.apply(mutations[i].addedNodes))
+						}
+					}
+				}.bind(this));
 
+				this.observer.observe(this.el, { 
+					attributes: false, 
+					childList: true, 
+					characterData: false 
+				});
+			} else {
+				//opera, ie
+				this.$el.on("DOMNodeInserted", function(e){
+					var el = (e.originalEvent || e).target;
+
+					if (el.nodeType !== 1) return;
+
+					this._addedItems([el])
+				}.bind(this))
+			}
+		},
 
 		//==========================API
 		//Ensures column number correct, reallocates items
@@ -234,14 +266,6 @@ Like masonry column shift, but works.
 
 			self.lastItems.length = ~~(self.colWidth / o.colMinWidth) || 1; //needed length
 
-			//console.log(prevCols + "->" + self.lastItems.length);
-			if (!o.useCalc || prevCols !== self.lastItems.length) {
-				//set item widths carefully - if columns changed or px widths used
-				for (var i = self.items.length; i--;){
-					this._setItemWidth(self.items[i]);
-				}
-			}
-
 			var top = o.useTranslate3d?0:self.pt;
 			for (i = 0; i < self.lastItems.length; i++){
 				self.lastHeights.push(top);
@@ -250,6 +274,14 @@ Like masonry column shift, but works.
 			}
 
 			self.colWidth /= self.lastItems.length;
+
+			//console.log(prevCols + "->" + self.lastItems.length);
+			if (!o.useCalc || prevCols !== self.lastItems.length) {
+				//set item widths carefully - if columns changed or px widths used
+				for (var i = self.items.length; i--;){
+					this._setItemWidth(self.items[i]);
+				}
+			}
 
 			return self.lastItems.length;
 		},
@@ -282,9 +314,9 @@ Like masonry column shift, but works.
 				colWeight = span/cols;
 			if (this.options.useCalc){
 				el.w = (100 * colWeight);
-				el.style.width = "calc(" + el.w + "% - " + (el.mr + el.ml + (this.pl + this.pr) * colWeight) + "px)";
+				el.style.width = this.calcPrefix + "(" + (100 * colWeight) +"% - " + (el.mr + el.ml + (this.pl + this.pr) * colWeight) + "px)";
 			} else {
-				el.w = ~~(this.colWidth * span - (el.ml - el.mr))
+				el.w = ~~(this.colWidth * span - (el.ml + el.mr))
 				el.style.width =  el.w + "px";
 			}
 		},
@@ -369,7 +401,7 @@ Like masonry column shift, but works.
 			e.top = ~~minH; //stupid save value for translate3d
 			if (o.useTranslate3d) {
 				var offset = (100 * minCol/span) + "% + " + ~~((e.ml + e.mr) * minCol/span) + "px";
-				e.style[cssPrefix + "transform"] = "translate3d(calc(" + offset + "), " + e.top + "px, 0)";
+				e.style[cssPrefix + "transform"] = "translate3d(" + this.calcPrefix + "(" + offset + "), " + e.top + "px, 0)";
 				//e.style[cssPrefix + "transform"] = "translate3d(" + ~~(self.colWidth * minCol + self.pl) + "px, " + e.top + "px, 0)";			
 			} else {
 				e.style.top = e.top + "px";
@@ -451,7 +483,7 @@ Like masonry column shift, but works.
 				[].forEach.call(el.attributes, function(attr) {
 					if (/^data-/.test(attr.name)) {
 						var camelCaseName = attr.name.substr(5).replace(/-(.)/g, function ($0, $1) {
-						    return $1.toUpperCase();
+							return $1.toUpperCase();
 						});
 						data[camelCaseName] = attr.value;
 					}
@@ -461,15 +493,18 @@ Like masonry column shift, but works.
 		}
 	}
 
-	//stupid prefix detector
-	function detectCSSPrefix(){
+	//prefix/features detector
+	function detectCSSPrefix(property){
+		if (!property) property = "transform";
+
 		var style = document.defaultView.getComputedStyle(document.body, "");
-		if (style["transform"]) return "";
-		if (style["-webkit-transform"]) return "-webkit-";
-		if (style["-moz-transform"]) return "-moz-";
-		if (style["-o-transform"]) return "-o-";
-		if (style["-khtml-transform"]) return "-khtml-";
-		return "";
+		if (style[property]) return "";
+		if (style["-webkit-" + property]) return "-webkit-";
+		if (style["-moz-" + property]) return "-moz-";
+		if (style["-o-" + property]) return "-o-";
+		if (style["-khtml-" + property]) return "-khtml-";
+
+		return false;
 	}
 
 	//autostart
