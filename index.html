@@ -350,9 +350,9 @@
 		<li><a href="#start-case">Start</a></li>
 		<li><a href="#options-case">Options</a></li>
 		<li><a href="#items-case">Items position</a></li>
-		<li><a href="#predefined-case">Predefined markup</a></li>
 		<li><a href="#api">API</a></li>
 		<li><a href="https://github.com/dfcreative/jquery.waterfall" class="external">Github</a></li>
+		<li><a href="test/order.html" class="external">Speed test</a></li>
 	</ul>
 
 	<div class="close">«</div>
@@ -386,7 +386,7 @@
 	<div>Item N</div> 
 </div>
 		</textarea>
-		<p><em>That’s it.</em> Every element which has the class <code>waterfall</code> will become a waterfall layout.</p>
+		<p><em>That’s it.</em> Every element which has the class <code>waterfall</code> will become a waterfall layout. Methods observing changing DOM are hooked up, you can safely add or remove items right to the container.</p>		
 	</div>
 	<div class="special" data-float="4">
 		<header><span class="count">2a</span> Alternately, you can init any container when document is ready. In this case you don’t have to append class <code>waterfall</code>:</header>
@@ -424,22 +424,20 @@ $(function(){
 			<dd>Minimal column width in pixels that’s used as a basis for calculating number of columns. Only pixel values accepted for now. If value is undefined — it firstly tries to parse css <code>min-width</code>, and if it fails will fall down to default 240px.</dd>
 			<dt>defaultContainerWidth: <small>$(window).width()</small></dt>
 			<dd>If container is hidden, it’s preferrable to pass default width to count on.</dd>
-			<dt>colClass: <small>undefined</small></dt>
-			<dd>Class to append to each column</dd>
 			<dt>autoresize: <small>true</small></dt>
 			<dd>Bind reflow on window resize</dd>
 			<dt>defaultClass: <small>'waterfall'</small></dt>
 			<dd>Class of container which to init as waterfall by default</dd>
-		</dl>
+		</dl><br/>
+		<p>There’re other less important options, look to the <a href="https://github.com/dfcreative/jquery.waterfall/blob/master/jquery.waterfall.js#L20">source</a>.</p>
 	</div>
 	<div class="special">
 		<h3><span class="count">α</span>Passing options as data-attributes</h3>
-		<p>Set options as data-attributes, translating camel-case to dashed-case:</p>
+		<p>translating camel-case to dashed-case:</p>
 		<textarea rows="8">
 <div class="waterfall" 
 	data-col-min-width="400"
-	data-default-container-width="800" 
-	data-col-class="content-column" 
+	data-default-container-width="800"
 	data-autoresize="true"> 
 … 
 </div>
@@ -450,43 +448,11 @@ $(function(){
 		<textarea rows="8">
 $('.some-container').waterfall({ 
 	colMinWidth: 400, 
-	defaultContainerWidth: 800, 
-	colClass: 'content-column', 
+	defaultContainerWidth: 800,
 	autoresize: true
 })
 </textarea>
 	</div>
-	<div class="special">
-		<h3><span class="count">γ</span>Predefining options</h3>
-		<textarea rows="8">
-<script>
-window.waterfall = {
-	defaultClass: "non-waterfall", "colMinWidth": 300
-}
-</script>
-
-<script src="waterfall.js"></script>
-</textarea>
-	</div>
-	<div class="special">
-		<h3>Let’s say, we have the next options for this block:</h3>
-		<textarea rows="8" id="opts-1">
-{
-	"colMinWidth": 400, 
-	"defaultContainerWidth": 800, 
-	"colClass": "content-column", 
-	"autoresize": true
-}
-</textarea>
-<button class='update-options' for="opts-1">Update options</button>
-<span class="info"></span>
-	</div>
-	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.</div>
-	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa.</div>
-	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem.</div>
-	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu.</div>
-	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor.</div>
-	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa.</div>
 </div>
 
 
@@ -502,15 +468,17 @@ window.waterfall = {
 			</dd>
 			<dt>data-float</dt>
 			<dd>Defines floating of item, i. e. boundary column (the same as data-column). Accepted values: <code>'left'</code>, <code>'right'</code>.</dd>
+			<dt>data-span</dt>
+			<dd>How much columns the element will take. The same as table-cell span attrubute. Accepted values: <code>number</code>, <code>'all'</code>.</dd>
 		</dl>
 	</div>	
-	<div data-float="left"><h4>data-float="left"</h4></div>
+	<div data-float="right"><h4>data-float="right"</h4></div>
 	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem.</div>
 	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</div>
 	<div data-column="2"><h4>data-column="2"</h4></code></div>
 	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</div>
 	<div data-column="3"><h4>data-column="3"</h4></div>
-	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor.</div>
+	<div data-span="2">data-span="2"</div>
 	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</div>
 	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor.</div>
 	<div data-column="last"><h4>data-column="last"</h4></div>
@@ -519,83 +487,26 @@ window.waterfall = {
 	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor.</div>
 	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor.</div>
 	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor.</div>
+	<div data-span="all"><h4>data-span="all"</h4></div>
+	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor.</div>
+	<div data-column="2" data-span="2"><h4>data-column="3" data-span="2"</h4></div>
+	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor.</div>
+	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor.</div>
+	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor.</div>
+	<div data-float="left" data-span="2"><h4>data-float="left" data-span="2"</h4></div>
+	<div data-float="right" data-span="2"><h4>data-float="right" data-span="2"</h4></div>
+	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor.</div>
+	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor.</div>
 	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor.</div>
 	<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor.</div>
 </div>
 
-
-<div id="predefined-case" class="case waterfall" data-col-class="column">
-	<div class="column">
-		<div class="special">
-			<h2><a href="#predefined-case">Predefined markup</a></h2>
-			<p>
-				Sometimes you want to avoid unpleasant leap of layout when loading of scripts happens, or to have markup looking well with disabled JS. In this case you can render columns with items before waterfall inits itself, assigning them class <code>wf-column</code>. Or you can set <code>data-col-class="column"</code> to the container and assign proper class to it’s children, then waterfall will recognize columns instead of items.
-			</p>
-			<p>As a result, you should come up with next markup:
-			</p>
-			<textarea rows="16">
-&lt;div class=&quot;container waterfall&quot; data-col-class=&quot;col&quot;&gt;
-	&lt;div class=&quot;col&quot;&gt;
-		&lt;div&gt;item&lt;/div&gt;
-		&lt;div&gt;item&lt;/div&gt;
-	&lt;/div&gt;
-	&lt;div class=&quot;col&quot;&gt;
-		&lt;div&gt;item&lt;/div&gt;
-		&lt;div&gt;item&lt;/div&gt;
-	&lt;/div&gt;
-	&lt;div class=&quot;col&quot;&gt;
-		&lt;div&gt;item&lt;/div&gt;
-		&lt;div&gt;item&lt;/div&gt;
-	&lt;/div&gt;
-&lt;/div&gt;
-			</textarea>
-		</div>
-		<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor.</div>
-		<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem.</div>
-	</div>
-	<div class="column">
-		<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu. In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium. Integer tincidunt. Cras dapibus.</div>
-		<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</div>
-		<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor.</div>
-	</div>
-	<div class="column">
-		<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa.</div>
-		<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor.</div>
-		<div>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor.</div>
-	</div>
-</div>
 
 <div id="api" class="case waterfall" data-col-min-width="400">
 	<div class="special">
 		<h2><a href="#api">API</a></h2>
-		<p>Methods could be invoked by calling the constructor with the name of a method passed:</p>
-			<code class="block">$('.waterfall').waterfall('API_meth')</code>
-		<p>Besides, you can get the waterfall object that represents all the API methods:</p>
-			<code class="block">var wf = $('.container').data('waterfall');</code>		
-		<p class="warn">! Be aware that zepto disables access to the waterfall object.</p>		
+		<p>There’s no API. Add or remove items to the container through the DOM (or jQuery), and waterfall will automatically place them.</p>
 	</div>
-	<div class="special">
-		<h3>Methods available</h3>
-		<dl>
-			<dt>waterfall.reflow()</dt>
-			<dd>Recounts required number of columns, redistributes items by columns. Optimized for speed, so it takes minimal possible calcs.</dd>
-			<dt>waterfall.add(item)</dt>
-			<dd>Appends a new item or a bunch of items to layout. Using this is more preferrable than jQuery dom-inserting methods like <code>container.append(item)</code>. Waterfall will take care of optimal placing and appending.</dd>
-				<code class="block">
-waterfall.add(<br>$('&lt;div class=&quot;item&quot;&gt;Some item.&lt;/div&gt;')<br>); //one item
-<br>
-<br>
-waterfall.add(<br>'&lt;div class=&quot;item&quot;&gt;Item 1.&lt;/div&gt;' + <br>'&lt;div class=&quot;item&quot;&gt;Item 2.&lt;/div&gt;'<br>); //few items
-				</code>
-		</dl>
-	</div>
-	<div class="special">
-		<h3>Try it</h3>
-		<button id="reflow-btn">Reflow</button>
-		<button id="add-btn">Add</button>
-		<button id="add-5-btn">Add 5</button>
-	</div>
-</div>
 </div>
 
 

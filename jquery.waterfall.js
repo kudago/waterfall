@@ -18,22 +18,16 @@ Like masonry column shift, but works.
 
 	$.extend(Waterfall.prototype, {
 		options: {
-			colMinWidth: 300,
+			colMinWidth: 300, //width of column, used to calculate number of columns possible to display
 			defaultContainerWidth: window.clientWidth,
-			itemSelector: null,
 			autoresize: true,
-			order: "waterfall", //TODO: columns order, like css3 columns
-			maxCols: 16,
-			updateDelay: 25,
-			maximizeHeightInterval: 20,
-			evSuffix: "waterfall",
-			useCalc: undefined, //set width through calc value: true, false, undefined - autodetection
-			useTranslate3d: undefined, //true, false, undefined - autodetection
-			animateShow: false, //whether to animate appending items
+			maxCols: 16, //used to restrict max number of columns
+			updateDelay: 25, //how often to reflow layout on window resize
+			useCalc: undefined, //set width through -prefix-calc value. Values: true, false, undefined. Autodetection.
+			useTranslate3d: undefined, //place items through translate3d instead of top/left. Values: true, false, undefined. Autodetection
+			animateShow: false, //whether to animate appending items (causes browser extra-reflows, slows down rendering)
 
-			itemInserted: null, //before set item position
-			itemPlaced: null, //before calc item's height
-			initItems: null, //called on initial items comprehensed (before placing them)
+			//callbacks
 			reflow: null
 		},
 
@@ -41,7 +35,6 @@ Like masonry column shift, but works.
 			var self = this,
 			o = self.options = $.extend({}, self.options, opts);
 
-			this.evSuffix = "." + o.evSuffix;
 			this.items = [];
 
 			//init some vars
@@ -92,8 +85,6 @@ Like masonry column shift, but works.
 
 			self.lastItem = self.items[self.items.length-1]
 			self.firstItem = self.items[0]
-
-			//self._trigger('initItems', self.items);
 
 			self._update();
 
@@ -411,8 +402,6 @@ Like masonry column shift, but works.
 			//if element was added first time and is out of flow - show it
 			//e.style.opacity = 1;
 			e.removeAttribute("hidden")
-
-			//self._trigger('itemPlaced', e);
 
 			newH = self._getBottom(e); //this is the most difficult operation (e.clientHeight)
 			for (t = 0; t < spanCols.length; t++) {

@@ -39,21 +39,13 @@
 		right: 10px;
 		top: 10px;
 	}
-	.add.dfd{
-		margin-top: 30px;
-	}
 	.add.raw{
-		margin-top: 90px;
-	}
-	.add.massive{
-		margin-top: 60px;
+		margin-top: 30px;
 	}
 </style>
 
 <button class="add simple">Add  3</button>
-<button class="add dfd">Add deferred 3</button>
-<button class="add massive">Add deferred 100</button>
-<button class="add raw">Add raw 100</button>
+<button class="add raw">Add 100</button>
 
 <div class="container" data-width="90">
 		<div class="item" data-span="2" data-coslumn="1">Header col-2</div>
@@ -97,35 +89,6 @@ $(function(){
 
 	$(".add.simple").click(function(){
 		wf.$el.append($(getNewItem() + getNewItem() + getNewItem()));
-	})
-
-	$(".add.dfd").click(function(){
-		items = $(getNewItem() + getNewItem() + getNewItem());
-		items.each(function(i, e){
-			var $e = $(e);
-			$e.attr("data-waitload", true);
-			setTimeout(function(){
-				this.trigger("load");
-			}.bind($e), 500 + Math.random()* 1000);
-		})
-		wf.$el.append(items)
-	})
-
-	$(".add.massive").click(function(){
-		var t = Date.now()
-		var items = ""
-		for (var i = 0; i < 100; i++){
-			items += getNewItem();
-		}
-		var $items = $(items);
-		$items.each(function(i, e){
-			var $e = $(e);		
-			setTimeout(function(){
-				this.trigger("load");
-			}.bind($e), 500 + Math.random()* 1000);
-		})
-		wf.add($items, true);
-		console.log(Date.now() - t + "ms")
 	})
 
 	$(".add.raw").click(function(){
