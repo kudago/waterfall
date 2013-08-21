@@ -124,6 +124,12 @@ Like masonry column shift, but works.
 					if (el.nodeType !== 1) return;
 
 					this._addedItems([el])
+				}.bind(this)).on("DOMNodeRemoved", function(e){
+					var el = (e.originalEvent || e).target;
+
+					if (el.nodeType !== 1) return;
+
+					this._removedItems([el])
 				}.bind(this))
 			}
 		},
