@@ -39,13 +39,13 @@
 		right: 10px;
 		top: 10px;
 	}
-	.add.raw{
+	.add.append{
 		margin-top: 30px;
 	}
 </style>
 
-<button class="add simple">Add  3</button>
-<button class="add raw">Add 100</button>
+<button class="add prepend">Prepend  100</button>
+<button class="add append">Append 100</button>
 
 <div class="container" data-width="90">
 		<div class="item" data-span="2" data-coslumn="1">Header col-2</div>
@@ -87,11 +87,28 @@ $(function(){
 
 	var wf = $(".container").waterfall();
 
-	$(".add.simple").click(function(){
-		wf.$el.append($(getNewItem() + getNewItem() + getNewItem()));
+	$(".add.prepend").click(function(){
+		var t = Date.now()
+		var df = document.createDocumentFragment(),
+			div = document.createElement("div"),
+			items = "";
+
+		for (var i = 0; i < 100; i++){
+			items += getNewItem();
+		}
+
+		div.innerHTML = items;
+		var ch = div.children;
+
+		for (var i = 0; i < ch.length; i++){
+			df.appendChild(ch[i])
+		}
+
+		wf.el.insertBefore(df, wf.el.firstChild);
+		console.log(Date.now() - t + "ms")
 	})
 
-	$(".add.raw").click(function(){
+	$(".add.append").click(function(){
 		var t = Date.now()
 		var df = document.createDocumentFragment(),
 			div = document.createElement("div"),

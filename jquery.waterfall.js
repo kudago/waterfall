@@ -106,7 +106,12 @@ Like masonry column shift, but works.
 							this._removedItems(Array.prototype.slice.apply(mutations[i].removedNodes))
 						}
 						if (mutations[i].addedNodes.length){
-							this._addedItems(Array.prototype.slice.apply(mutations[i].addedNodes))
+							var nodes = Array.prototype.slice.apply(mutations[i].addedNodes)
+							if (mutations[i].nextSibling){
+								this._prependedItems(nodes)
+							} else {
+								this._appendedItems(nodes)
+							}
 						}
 					}
 				}.bind(this));
@@ -118,12 +123,16 @@ Like masonry column shift, but works.
 				});
 			} else {
 				//opera, ie
-				this.$el.on("DOMNodeInserted", function(e){
+				this.$el.on("DOMNodeInserted", function(e){					
 					var el = (e.originalEvent || e).target;
 
 					if (el.nodeType !== 1) return;
 
-					this._addedItems([el])
+					if(el.nextSibling) {
+						this._prependedItems([el])
+					} else {
+						this._appendedItems([el])						
+					}
 				}.bind(this)).on("DOMNodeRemoved", function(e){
 					var el = (e.originalEvent || e).target;
 
@@ -147,7 +156,7 @@ Like masonry column shift, but works.
 
 		//========================= Techs
 		//called by mutation observer
-		_addedItems: function(items){
+		_appendedItems: function(items){
 			var o = this.options, l = items.length;
 			for (var i = 0; i < l; i++ ){
 				var el = items[i];
@@ -163,6 +172,22 @@ Like masonry column shift, but works.
 			this.lastItem = this.items[this.items.length - 1];
 
 			this._maximizeHeight();
+		},
+
+		//called by mutation observer
+		_prependedItems: function(items){
+			var o = this.options, l = items.length,
+				cleanItems = [];
+			for (var i = 0; i < l; i++ ){
+				var el = items[i];
+				if (el.nodeType !== 1) continue;
+				cleanItems.push(el);
+				this._initItem(el); //TODO: optimize
+			}
+
+			this.items = cleanItems.concat(this.items);
+
+			this.reflow();
 		},
 
 		//called by mutation observer
