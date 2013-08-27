@@ -1,3 +1,7 @@
+* Insert inside the list - animate displacing
+
+* Make layouter - generic layout description thing
+
 * Correct chrome rounding of item offsets
 
 * Use translate-3d and calc, if possible. If not - use simple absolute positioning.

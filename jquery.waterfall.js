@@ -49,22 +49,36 @@ Like masonry column shift, but works.
 
 			//detect placing mode needed
 			if (o.useCalc === undefined){
-				this.calcPrefix = (function(){
+				this.prefixedCalc = (function(){
 					//modernizr-snippet
-					var dummy = document.createElement('div');
-					var props = ['calc', '-webkit-calc', '-moz-calc', '-o-calc'];
+					var dummy = document.createElement('div'),
+						props = ['calc', '-webkit-calc', '-moz-calc', '-o-calc'];
 					for (var i=0; i<props.length; ++i) {
 						var prop = props[i];
 						dummy.style.cssText = 'width:' + prop + '(1px);';
+						if (dummy.style.length && dummy.style.width){
+							console.log(dummy.style.width)
+							return prop;
+						}
+					}
+				})();
+				o.useCalc = !!this.prefixedCalc;
+			}
+			//console.log(this.prefixedCalc);
+			if (o.useTranslate3d === undefined){
+				this.prefixedTranslate3d = (function(){
+					var dummy = document.createElement('div');
+					var props = ['translate3d', '-webkit-translate3d', '-moz-translate3d', '-o-translate3d'];
+					for (var i=0; i<props.length; ++i) {
+						var prop = props[i];
+						dummy.style.cssText = cssPrefix + 'transform:' + prop + '(1px, 0, 0);';
 						if (dummy.style.length)
 							return prop;
 					}
 				})();
-				o.useCalc = !!this.calcPrefix;
+				o.useTranslate3d = !!this.prefixedTranslate3d;
 			}
-			if (o.useTranslate3d === undefined){
-				o.useTranslate3d = !!detectCSSPrefix("transform")
-			}
+			//console.log(this.prefixedTranslate3d)
 
 			//populate items
 			var items;
@@ -116,14 +130,14 @@ Like masonry column shift, but works.
 					}
 				}.bind(this));
 
-				this.observer.observe(this.el, { 
+				this.observer.observe(this.el, {
 					attributes: false, 
 					childList: true, 
 					characterData: false 
 				});
 			} else {
 				//opera, ie
-				this.$el.on("DOMNodeInserted", function(e){					
+				this.$el.on("DOMNodeInserted", function(e){				
 					var el = (e.originalEvent || e).target;
 
 					if (el.nodeType !== 1) return;
@@ -163,6 +177,7 @@ Like masonry column shift, but works.
 				if (el.nodeType !== 1) continue;
 				this.items.push(el);
 				this._initItem(el); //TODO: optimize
+				this._setItemWidth(el);
 			}
 
 			for (var i = 0; i < l; i++){
@@ -236,7 +251,7 @@ Like masonry column shift, but works.
 
 			//set style
 			el.style.position = "absolute";
-			this._setItemWidth(el);
+			//this._setItemWidth(el); //make it external action to not to init frominside create
 
 			//parset float
 			var float = el.getAttribute("data-float") || el.getAttribute("data-column");
@@ -336,7 +351,7 @@ Like masonry column shift, but works.
 				colWeight = span/cols;
 			if (this.options.useCalc){
 				el.w = (100 * colWeight);
-				el.style.width = this.calcPrefix + "(" + (100 * colWeight) +"% - " + (el.mr + el.ml + (this.pl + this.pr) * colWeight) + "px)";
+				el.style.width = this.prefixedCalc + "(" + (100 * colWeight) +"% - " + (el.mr + el.ml + (this.pl + this.pr) * colWeight) + "px)";
 			} else {
 				el.w = ~~(this.colWidth * span - (el.ml + el.mr))
 				el.style.width =  el.w + "px";
@@ -423,8 +438,12 @@ Like masonry column shift, but works.
 			e.top = ~~minH; //stupid save value for translate3d
 			if (o.useTranslate3d) {
 				var offset = (100 * minCol/span) + "% + " + ~~((e.ml + e.mr) * minCol/span) + "px";
-				e.style[cssPrefix + "transform"] = "translate3d(" + this.calcPrefix + "(" + offset + "), " + e.top + "px, 0)";
-				//e.style[cssPrefix + "transform"] = "translate3d(" + ~~(self.colWidth * minCol + self.pl) + "px, " + e.top + "px, 0)";			
+				if (o.useCalc){
+					e.style[cssPrefix + "transform"] = this.prefixedTranslate3d + "( " + this.prefixedCalc + "(" + offset + "), " + e.top + "px, 0)";
+				} else {
+					//Safari won't set -webkit-calc in element.style
+					e.style[cssPrefix + "transform"] = this.prefixedTranslate3d + "(" + ~~(self.colWidth * minCol) + "px, " + e.top + "px, 0)";
+				}
 			} else {
 				e.style.top = e.top + "px";
 				e.style.left = self.colWidth * minCol + self.pl + "px";
