@@ -57,7 +57,6 @@ Like masonry column shift, but works.
 						var prop = props[i];
 						dummy.style.cssText = 'width:' + prop + '(1px);';
 						if (dummy.style.length && dummy.style.width){
-							console.log(dummy.style.width)
 							return prop;
 						}
 					}
@@ -198,6 +197,7 @@ Like masonry column shift, but works.
 				if (el.nodeType !== 1) continue;
 				cleanItems.push(el);
 				this._initItem(el); //TODO: optimize
+				this._setItemWidth(el);
 			}
 
 			this.items = cleanItems.concat(this.items);
