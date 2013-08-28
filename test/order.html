@@ -47,7 +47,7 @@
 <button class="add prepend">Prepend  100</button>
 <button class="add append">Append 100</button>
 
-<div class="container" data-width="90">
+<section class="container" data-width="90">
 		<div class="item" data-span="2" data-coslumn="1">Header col-2</div>
 		<div class="item">1</div>
 		<div class="item">4</div>
@@ -74,7 +74,7 @@
 		<div class="item" data-flosat="right">20 right</div>
 		<div class="item">21</div>
 		<div class="item" data-span="3">Divider last</div>
-</div>
+</section>
 
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
 <script>window.jQuery || document.write('<script src="../js/zepto.js"><\/script>')</script>
@@ -94,14 +94,8 @@ $(function(){
 			items = "";
 
 		for (var i = 0; i < 100; i++){
-			items += getNewItem();
-		}
-
-		div.innerHTML = items;
-		var ch = div.children;
-
-		for (var i = 0; i < ch.length; i++){
-			df.appendChild(ch[i])
+			div.innerHTML = getNewItem();
+			df.appendChild(div.firstChild)
 		}
 
 		wf.el.insertBefore(df, wf.el.firstChild);
@@ -138,7 +132,7 @@ $(function(){
 		var res = '<div hidden class="item" ' 
 					+ (span ? ('data-span="' + span + '" ') : '') 
 					+ (float ? ('data-float="' + floatText + '" ') : '') 
-					+ '>' + idx + ' ' + (float ? floatText : '') + '<div class="img"></div></div>';
+					+ '>' + idx + ' ' + (float ? floatText : '') + '<p class="img"></p></div>';
 		return res;
 	}
 })

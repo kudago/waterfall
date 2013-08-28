@@ -1,6 +1,6 @@
 ﻿/* Simple min-height-masonry layout plugin.
 Like masonry column shift, but works. */
-(function($) {
+;(function($) {
 
 	'use strict';
 
@@ -20,7 +20,7 @@ Like masonry column shift, but works. */
 			defaultContainerWidth: window.clientWidth,
 			autoresize: true,
 			maxCols: 16, //used to restrict max number of columns
-			updateDelay: 25, //how often to reflow layout on window resize
+			updateDelay: 45, //how often to reflow layout on window resize
 			useCalc: undefined, //set width through -prefix-calc value. Values: true, false, undefined. Autodetection.
 			useTranslate3d: undefined, //place items through translate3d instead of top/left. Values: true, false, undefined. Autodetection
 			animateShow: false, //whether to animate appending items (causes browser extra-reflows, slows down rendering)
@@ -42,19 +42,20 @@ Like masonry column shift, but works. */
 			self.baseOrder = [];
 
 			var cStyle = getComputedStyle(self.el);
+			self.el.hidden = true;
 			self.el.style.minHeight = cStyle.height; //prevent scrollbar width changing
 			if (self.$el.css('position') === 'static') self.el.style.position = 'relative';
 
 			//detect placing mode needed
 			if (o.useCalc === undefined) {
+				//transform calc detect
 				this.prefixedCalc = (function() {
-					//modernizr-snippet
 					var dummy = document.createElement('div'),
 						props = ['calc', '-webkit-calc', '-moz-calc', '-o-calc'];
 					for (var i = 0; i < props.length; ++i) {
 						var prop = props[i];
-						dummy.style.cssText = 'width:' + prop + '(1px);';
-						if (dummy.style.length && dummy.style.width) {
+						dummy.style.cssText = cssPrefix + 'transform: translate3d(' + prop + '(1px), 0, 0);';
+						if (dummy.style.length && dummy.style[cssPrefix + 'transform']) {
 							return prop;
 						}
 					}
@@ -82,11 +83,16 @@ Like masonry column shift, but works. */
 			if (o.itemSelector) {
 				items = self.$el.find(o.itemSelector);
 				items.detach();
-				self.$el.children()
-					.remove();
-				self.$el.append(items);
+				self.$el.children().remove();
 			} else {
 				items = self.$el.children();
+			}
+
+			//remove text nodes
+			for (var i = 0; i < self.el.childNodes.length;){
+				if (self.el.childNodes[i].nodeType !== 1){
+					self.el.removeChild(self.el.childNodes[i]);
+				} else i++;
 			}
 
 			items.each(function(i, e) {
@@ -96,7 +102,8 @@ Like masonry column shift, but works. */
 			});
 
 			self.lastItem = self.items[self.items.length - 1];
-			self.firstItem = self.items[0];
+
+			self.el.removeAttribute("hidden");
 
 			self._update();
 
@@ -121,7 +128,7 @@ Like masonry column shift, but works. */
 						if (mutations[i].addedNodes.length) {
 							var nodes = Array.prototype.slice.apply(mutations[i].addedNodes);
 							if (mutations[i].nextSibling) {
-								this._prependedItems(nodes);
+								this._insertedItems(nodes);
 							} else {
 								this._appendedItems(nodes);
 							}
@@ -137,25 +144,25 @@ Like masonry column shift, but works. */
 			} else {
 				//opera, ie
 				this.$el.on('DOMNodeInserted', function(e) {
-					var el = (e.originalEvent || e)
-						.target;
+					var evt = (e.originalEvent || e),
+						target = evt.target;
+
+					if (target.nodeType !== 1) return;
+					if (target.parentNode !== this.el) return; //if insertee is below container
+					//console.log("--------" + target.className + " " + target.nextSibling)
+
+					if (target.previousSibling && target.previousSibling.span && (!target.nextSibling || !target.nextSibling.span)) {
+						this._appendedItems([target]); //append specific case, times faster than _insertedItems
+					} else {
+						this._insertedItems([target]);
+					}
+				}.bind(this)).on('DOMNodeRemoved', function(e) {
+					var el = (e.originalEvent || e).target;
 
 					if (el.nodeType !== 1) return;
 
-					if (el.nextSibling) {
-						this._prependedItems([el]);
-					} else {
-						this._appendedItems([el]);
-					}
-				}.bind(this))
-					.on('DOMNodeRemoved', function(e) {
-						var el = (e.originalEvent || e)
-							.target;
-
-						if (el.nodeType !== 1) return;
-
-						this._removedItems([el]);
-					}.bind(this));
+					this._removedItems([el]);
+				}.bind(this));
 			}
 		},
 
@@ -176,6 +183,7 @@ Like masonry column shift, but works. */
 		_appendedItems: function(items) {
 			var l = items.length,
 				i = 0;
+			//console.log("append: " + items)
 			for (; i < l; i++) {
 				var el = items[i];
 				if (el.nodeType !== 1) continue;
@@ -193,26 +201,37 @@ Like masonry column shift, but works. */
 			this._maximizeHeight();
 		},
 
-		//called by mutation observer
-		_prependedItems: function(items) {
-			var l = items.length,
-				cleanItems = [];
+		//if new items inserted somewhere inside the list
+		_insertedItems: function(items) {
+			//console.log("insert" + items)
+			//clear old items
+			this.items.length = 0;
+
+			//init new items
+			var l = items.length;
 			for (var i = 0; i < l; i++) {
 				var el = items[i];
 				if (el.nodeType !== 1) continue;
-				cleanItems.push(el);
 				this._initItem(el); //TODO: optimize
 				this._setItemWidth(el);
 			}
 
-			this.items = cleanItems.concat(this.items);
+			//reinit all items
+			var children = this.el.childNodes,
+				itemsL = children.length;
+
+			for (var i = 0; i < itemsL; i++){
+				if (children[i].nodeType !== 1) continue;
+				this.items.push(children[i]);
+			}
+			this.lastItem = this.items[this.items.length - 1];
 
 			this.reflow();
 		},
 
 		//called by mutation observer
 		_removedItems: function(items) {
-			var	childItems = this.el.childNodes,
+			var childItems = this.el.childNodes,
 				cl = childItems.length;
 
 			//reinit items
@@ -238,28 +257,29 @@ Like masonry column shift, but works. */
 
 		//init item properties once item appended
 		_initItem: function(el) {
-			var o = this.options;
-			//parse span
-			var span = el.getAttribute('data-span') || 1;
+			var o = this.options,
+				span = el.getAttribute('data-span') || 1,
+				floatVal = el.getAttribute('data-float') || el.getAttribute('data-column');
+
+			//set span
 			span = (span === 'all' ? o.maxCols : Math.max(0, Math.min(~~(span), o.maxCols)));
 			el.span = span; //quite bad, but no choice: dataset is sloow
 
 			//save heavy style-attrs
 			var style = getComputedStyle(el);
-			el.mr = ~~ (style.marginRight.slice(0, -2));
-			el.ml = ~~ (style.marginLeft.slice(0, -2));
-			el.bt = ~~ (style.borderTopWidth.slice(0, -2));
-			el.bb = ~~ (style.borderBottomWidth.slice(0, -2));
-			el.mt = ~~ (style.marginTop.slice(0, -2)); //ignored because of offsetTop instead of style.top
-			el.mb = ~~ (style.marginBottom.slice(0, -2));
+			el.mr = ~~(style.marginRight.slice(0, -2));
+			el.ml = ~~(style.marginLeft.slice(0, -2));
+			el.bt = ~~(style.borderTopWidth.slice(0, -2));
+			el.bb = ~~(style.borderBottomWidth.slice(0, -2));
+			el.mt = ~~(style.marginTop.slice(0, -2)); //ignored because of offsetTop instead of style.top
+			el.mb = ~~(style.marginBottom.slice(0, -2));
 
 			//set style
 			el.style.position = 'absolute';
 			//this._setItemWidth(el); //make it external action to not to init frominside create
 
 			//parset float
-			var float = el.getAttribute('data-float') || el.getAttribute('data-column');
-			switch (float) {
+			switch (floatVal) {
 				case null: //no float
 					el.floatCol = null;
 					break;
@@ -272,7 +292,7 @@ Like masonry column shift, but works. */
 					el.floatCol = 0;
 					break;
 				default: //int column
-					el.floatCol = ~~ (float) - 1;
+					el.floatCol = ~~(floatVal) - 1;
 					break;
 			}
 
@@ -295,10 +315,10 @@ Like masonry column shift, but works. */
 				i = 0,
 				prevCols = self.lastItems.length;
 
-			self.pl = ~~ (cStyle.paddingLeft.slice(0, -2));
-			self.pt = ~~ (cStyle.paddingTop.slice(0, -2));
-			self.pr = ~~ (cStyle.paddingRight.slice(0, -2));
-			self.pb = ~~ (cStyle.paddingBottom.slice(0, -2));
+			self.pl = ~~(cStyle.paddingLeft.slice(0, -2));
+			self.pt = ~~(cStyle.paddingTop.slice(0, -2));
+			self.pr = ~~(cStyle.paddingRight.slice(0, -2));
+			self.pb = ~~(cStyle.paddingBottom.slice(0, -2));
 
 			self.lastHeights.length = 0;
 			self.colPriority.length = 0; //most left = most minimal column
@@ -306,7 +326,7 @@ Like masonry column shift, but works. */
 
 			self.colWidth = self.el.clientWidth - self.pl - self.pr;
 
-			self.lastItems.length = ~~ (self.colWidth / o.colMinWidth) || 1; //needed length
+			self.lastItems.length = ~~(self.colWidth / o.colMinWidth) || 1; //needed length
 
 			var top = o.useTranslate3d ? 0 : self.pt;
 			for (i = 0; i < self.lastItems.length; i++) {
@@ -358,7 +378,7 @@ Like masonry column shift, but works. */
 				el.w = (100 * colWeight);
 				el.style.width = this.prefixedCalc + '(' + (100 * colWeight) + '% - ' + (el.mr + el.ml + (this.pl + this.pr) * colWeight) + 'px)';
 			} else {
-				el.w = ~~ (this.colWidth * span - (el.ml + el.mr));
+				el.w = ~~(this.colWidth * span - (el.ml + el.mr));
 				el.style.width = el.w + 'px';
 			}
 		},
@@ -384,10 +404,10 @@ Like masonry column shift, but works. */
 				style,
 				floatCol = e.floatCol;
 
-			//console.log('------ item')
+			//console.log('------ item:' + e.innerHTML)
 			//console.log('span:'+span)			
 
-			//Find proper column to place item
+			//Find pro→per column to place item
 			//console.log(colPriority)
 			if (floatCol) {
 				floatCol = floatCol > 0 ? Math.min(floatCol, lastItems.length - span) : (lastItems.length + floatCol);
@@ -460,6 +480,7 @@ Like masonry column shift, but works. */
 				e.style.top = e.top + 'px';
 				e.style.left = self.colWidth * minCol + self.pl + 'px';
 			}
+			//console.log(e.style[cssPrefix + 'transform'])
 
 			//if element was added first time and is out of flow - show it
 			//e.style.opacity = 1;
