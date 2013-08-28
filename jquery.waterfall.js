@@ -1,20 +1,18 @@
-﻿/*
-Simple min-height-masonry layout plugin.
-Like masonry column shift, but works.
-*/
-;(function ($){
-	var $wnd = $(window),
-		$doc = $(window.document),
-		$body = $(window.document.body),
-		cssPrefix = detectCSSPrefix();
+﻿/* Simple min-height-masonry layout plugin.
+Like masonry column shift, but works. */
+(function($) {
 
-	var Waterfall = function (el, opts){
+	'use strict';
+
+	var cssPrefix = detectCSSPrefix();
+
+	var Waterfall = function(el, opts) {
 		this.$el = $(el);
 		this.el = el[0];
-		this._create(opts)
-	}
+		this._create(opts);
+	};
 
-	Waterfall.defaultClass = "waterfall";
+	Waterfall.defaultClass = 'waterfall';
 
 	$.extend(Waterfall.prototype, {
 		options: {
@@ -31,9 +29,9 @@ Like masonry column shift, but works.
 			reflow: null
 		},
 
-		_create: function (opts) {
+		_create: function(opts) {
 			var self = this,
-			o = self.options = $.extend({}, self.options, opts);
+				o = self.options = $.extend({}, self.options, opts);
 
 			this.items = [];
 
@@ -45,121 +43,127 @@ Like masonry column shift, but works.
 
 			var cStyle = getComputedStyle(self.el);
 			self.el.style.minHeight = cStyle.height; //prevent scrollbar width changing
-			if (self.$el.css("position") === "static" ) self.el.style.position = "relative";
+			if (self.$el.css('position') === 'static') self.el.style.position = 'relative';
 
 			//detect placing mode needed
-			if (o.useCalc === undefined){
-				this.prefixedCalc = (function(){
+			if (o.useCalc === undefined) {
+				this.prefixedCalc = (function() {
 					//modernizr-snippet
 					var dummy = document.createElement('div'),
 						props = ['calc', '-webkit-calc', '-moz-calc', '-o-calc'];
-					for (var i=0; i<props.length; ++i) {
+					for (var i = 0; i < props.length; ++i) {
 						var prop = props[i];
 						dummy.style.cssText = 'width:' + prop + '(1px);';
-						if (dummy.style.length && dummy.style.width){
+						if (dummy.style.length && dummy.style.width) {
 							return prop;
 						}
 					}
 				})();
-				o.useCalc = !!this.prefixedCalc;
+				o.useCalc = !! this.prefixedCalc;
 			}
 			//console.log(this.prefixedCalc);
-			if (o.useTranslate3d === undefined){
-				this.prefixedTranslate3d = (function(){
+			if (o.useTranslate3d === undefined) {
+				this.prefixedTranslate3d = (function() {
 					var dummy = document.createElement('div');
 					var props = ['translate3d', '-webkit-translate3d', '-moz-translate3d', '-o-translate3d'];
-					for (var i=0; i<props.length; ++i) {
+					for (var i = 0; i < props.length; ++i) {
 						var prop = props[i];
 						dummy.style.cssText = cssPrefix + 'transform:' + prop + '(1px, 0, 0);';
 						if (dummy.style.length)
 							return prop;
 					}
 				})();
-				o.useTranslate3d = !!this.prefixedTranslate3d;
+				o.useTranslate3d = !! this.prefixedTranslate3d;
 			}
 			//console.log(this.prefixedTranslate3d)
 
 			//populate items
 			var items;
-			if (o.itemSelector){
+			if (o.itemSelector) {
 				items = self.$el.find(o.itemSelector);
 				items.detach();
-				self.$el.children().remove();
-				self.$el.append(items)
+				self.$el.children()
+					.remove();
+				self.$el.append(items);
 			} else {
 				items = self.$el.children();
-			} 
-						
-			items.each(function(i, e){
-				//self.items[i].data("id", i);
+			}
+
+			items.each(function(i, e) {
+				//self.items[i].data('id', i);
 				self.items.push(e);
 				self._initItem(e);
-			})
+			});
 
-			self.lastItem = self.items[self.items.length-1]
-			self.firstItem = self.items[0]
+			self.lastItem = self.items[self.items.length - 1];
+			self.firstItem = self.items[0];
 
 			self._update();
 
 			if (o.autoresize) {
-				$(window).resize(self.reflow.bind(self))
+				$(window)
+					.resize(self.reflow.bind(self));
 			}
-		
+
 			this._observeMutations();
 		},
 
-		_observeMutations: function(){
+		_observeMutations: function() {
 			//Make Node changing observer - the fastest way to add items
 			if (window.MutationObserver) {
 				//FF, chrome
-				this.observer = new MutationObserver(function(mutations){
+				this.observer = new MutationObserver(function(mutations) {
 					var mNum = mutations.length;
-					for (var i = 0; i < mNum; i++){
-						if (mutations[i].removedNodes.length){
-							this._removedItems(Array.prototype.slice.apply(mutations[i].removedNodes))
+					for (var i = 0; i < mNum; i++) {
+						if (mutations[i].removedNodes.length) {
+							this._removedItems(Array.prototype.slice.apply(mutations[i].removedNodes));
 						}
-						if (mutations[i].addedNodes.length){
-							var nodes = Array.prototype.slice.apply(mutations[i].addedNodes)
-							if (mutations[i].nextSibling){
-								this._prependedItems(nodes)
+						if (mutations[i].addedNodes.length) {
+							var nodes = Array.prototype.slice.apply(mutations[i].addedNodes);
+							if (mutations[i].nextSibling) {
+								this._prependedItems(nodes);
 							} else {
-								this._appendedItems(nodes)
+								this._appendedItems(nodes);
 							}
 						}
 					}
 				}.bind(this));
 
 				this.observer.observe(this.el, {
-					attributes: false, 
-					childList: true, 
-					characterData: false 
+					attributes: false,
+					childList: true,
+					characterData: false
 				});
 			} else {
 				//opera, ie
-				this.$el.on("DOMNodeInserted", function(e){				
-					var el = (e.originalEvent || e).target;
+				this.$el.on('DOMNodeInserted', function(e) {
+					var el = (e.originalEvent || e)
+						.target;
 
 					if (el.nodeType !== 1) return;
 
-					if(el.nextSibling) {
-						this._prependedItems([el])
+					if (el.nextSibling) {
+						this._prependedItems([el]);
 					} else {
-						this._appendedItems([el])						
+						this._appendedItems([el]);
 					}
-				}.bind(this)).on("DOMNodeRemoved", function(e){
-					var el = (e.originalEvent || e).target;
-
-					if (el.nodeType !== 1) return;
-
-					this._removedItems([el])
 				}.bind(this))
+					.on('DOMNodeRemoved', function(e) {
+						var el = (e.originalEvent || e)
+							.target;
+
+						if (el.nodeType !== 1) return;
+
+						this._removedItems([el]);
+					}.bind(this));
 			}
 		},
 
 		//==========================API
 		//Ensures column number correct, reallocates items
-		reflow: function () {
-			var self = this, o = self.options;
+		reflow: function() {
+			var self = this,
+				o = self.options;
 
 			window.clearTimeout(self._updateInterval);
 			self._updateInterval = window.setTimeout(self._update.bind(self), o.updateDelay);
@@ -169,9 +173,10 @@ Like masonry column shift, but works.
 
 		//========================= Techs
 		//called by mutation observer
-		_appendedItems: function(items){
-			var o = this.options, l = items.length;
-			for (var i = 0; i < l; i++ ){
+		_appendedItems: function(items) {
+			var l = items.length,
+				i = 0;
+			for (; i < l; i++) {
 				var el = items[i];
 				if (el.nodeType !== 1) continue;
 				this.items.push(el);
@@ -179,8 +184,8 @@ Like masonry column shift, but works.
 				this._setItemWidth(el);
 			}
 
-			for (var i = 0; i < l; i++){
-				this._placeItem(items[i])
+			for (i = 0; i < l; i++) {
+				this._placeItem(items[i]);
 			}
 
 			this.lastItem = this.items[this.items.length - 1];
@@ -189,10 +194,10 @@ Like masonry column shift, but works.
 		},
 
 		//called by mutation observer
-		_prependedItems: function(items){
-			var o = this.options, l = items.length,
+		_prependedItems: function(items) {
+			var l = items.length,
 				cleanItems = [];
-			for (var i = 0; i < l; i++ ){
+			for (var i = 0; i < l; i++) {
 				var el = items[i];
 				if (el.nodeType !== 1) continue;
 				cleanItems.push(el);
@@ -206,94 +211,94 @@ Like masonry column shift, but works.
 		},
 
 		//called by mutation observer
-		_removedItems: function(items){
-			var l = items.length,
-				childItems = this.el.childNodes,
+		_removedItems: function(items) {
+			var	childItems = this.el.childNodes,
 				cl = childItems.length;
-			
+
 			//reinit items
 			this.items.length = 0;
-			for (var i = 0; i < cl; i++){
-				if (childItems[i] !== 1 ) continue;
+			for (var i = 0; i < cl; i++) {
+				if (childItems[i] !== 1) continue;
 				this.items.push(childItems[i]);
-			}			
+			}
 			this.lastItem = this.items[this.items.length - 1];
 
 			this._update();
 		},
 
 		//simple trigger routine
-		_trigger: function(cbName, arg){
+		_trigger: function(cbName, arg) {
 			try {
 				if (this.options[cbName]) this.options[cbName].call(this.$el, arg);
-				this.$el.trigger(cbName, [arg])
-			} catch (err){
+				this.$el.trigger(cbName, [arg]);
+			} catch (err) {
 				throw (err);
 			}
 		},
 
 		//init item properties once item appended
-		_initItem: function(el){
+		_initItem: function(el) {
 			var o = this.options;
 			//parse span
-			var	span = el.getAttribute("data-span") || 1;
-			span = (span === "all" ? o.maxCols : Math.max(0,Math.min( ~~(span), o.maxCols)));
+			var span = el.getAttribute('data-span') || 1;
+			span = (span === 'all' ? o.maxCols : Math.max(0, Math.min(~~(span), o.maxCols)));
 			el.span = span; //quite bad, but no choice: dataset is sloow
 
 			//save heavy style-attrs
 			var style = getComputedStyle(el);
-			el.mr = ~~(style.marginRight.slice(0, -2))
-			el.ml = ~~(style.marginLeft.slice(0, -2))
-			el.bt = ~~(style.borderTopWidth.slice(0, -2)) 
-			el.bb = ~~(style.borderBottomWidth.slice(0, -2))
-			el.mt = ~~(style.marginTop.slice(0, -2)) //ignored because of offsetTop instead of style.top
-			el.mb = ~~(style.marginBottom.slice(0, -2)); 
+			el.mr = ~~ (style.marginRight.slice(0, -2));
+			el.ml = ~~ (style.marginLeft.slice(0, -2));
+			el.bt = ~~ (style.borderTopWidth.slice(0, -2));
+			el.bb = ~~ (style.borderBottomWidth.slice(0, -2));
+			el.mt = ~~ (style.marginTop.slice(0, -2)); //ignored because of offsetTop instead of style.top
+			el.mb = ~~ (style.marginBottom.slice(0, -2));
 
 			//set style
-			el.style.position = "absolute";
+			el.style.position = 'absolute';
 			//this._setItemWidth(el); //make it external action to not to init frominside create
 
 			//parset float
-			var float = el.getAttribute("data-float") || el.getAttribute("data-column");
-			switch (float){
+			var float = el.getAttribute('data-float') || el.getAttribute('data-column');
+			switch (float) {
 				case null: //no float
 					el.floatCol = null;
 					break;
-				case "right":
-				case "last":
+				case 'right':
+				case 'last':
 					el.floatCol = -span;
 					break;
-				case "left":
-				case "first":
+				case 'left':
+				case 'first':
 					el.floatCol = 0;
 					break;
 				default: //int column
-					el.floatCol = ~~(float) - 1;
+					el.floatCol = ~~ (float) - 1;
 					break;
 			}
 
 			if (o.animateShow) {
-				if (o.useTranslate3d){
+				if (o.useTranslate3d) {
 					//TODO: this below crashes chrome
-					//el.style[cssPrefix+"translate"] = "translate3d(0, " + this.lastHeights[this.colPriority[0]] + "px ,0)"
+					//el.style[cssPrefix+'translate'] = 'translate3d(0, ' + this.lastHeights[this.colPriority[0]] + 'px ,0)'
 				} else {
-					el.style.top = this.lastHeights[this.colPriority[this.colPriority.length-1]] + "px";
-					el.style.left = this.colWidth * this.colPriority[this.colPriority.length-1] + "px";							
+					el.style.top = this.lastHeights[this.colPriority[this.colPriority.length - 1]] + 'px';
+					el.style.left = this.colWidth * this.colPriority[this.colPriority.length - 1] + 'px';
 				}
-				el.removeAttribute("hidden");
+				el.removeAttribute('hidden');
 			}
 		},
 
-		_initLayoutParams: function(){
-			var self = this, o = self.options,
+		_initLayoutParams: function() {
+			var self = this,
+				o = self.options,
 				cStyle = window.getComputedStyle(self.el),
 				i = 0,
 				prevCols = self.lastItems.length;
 
-			self.pl = ~~(cStyle.paddingLeft.slice(0,-2));
-			self.pt = ~~(cStyle.paddingTop.slice(0, -2));
-			self.pr = ~~(cStyle.paddingRight.slice(0, -2));
-			self.pb = ~~(cStyle.paddingBottom.slice(0, -2));
+			self.pl = ~~ (cStyle.paddingLeft.slice(0, -2));
+			self.pt = ~~ (cStyle.paddingTop.slice(0, -2));
+			self.pr = ~~ (cStyle.paddingRight.slice(0, -2));
+			self.pb = ~~ (cStyle.paddingBottom.slice(0, -2));
 
 			self.lastHeights.length = 0;
 			self.colPriority.length = 0; //most left = most minimal column
@@ -301,10 +306,10 @@ Like masonry column shift, but works.
 
 			self.colWidth = self.el.clientWidth - self.pl - self.pr;
 
-			self.lastItems.length = ~~(self.colWidth / o.colMinWidth) || 1; //needed length
+			self.lastItems.length = ~~ (self.colWidth / o.colMinWidth) || 1; //needed length
 
-			var top = o.useTranslate3d?0:self.pt;
-			for (i = 0; i < self.lastItems.length; i++){
+			var top = o.useTranslate3d ? 0 : self.pt;
+			for (i = 0; i < self.lastItems.length; i++) {
 				self.lastHeights.push(top);
 				self.baseOrder.push(i);
 				self.colPriority.push(i);
@@ -312,10 +317,10 @@ Like masonry column shift, but works.
 
 			self.colWidth /= self.lastItems.length;
 
-			//console.log(prevCols + "->" + self.lastItems.length);
+			//console.log(prevCols + '->' + self.lastItems.length);
 			if (!o.useCalc || prevCols !== self.lastItems.length) {
 				//set item widths carefully - if columns changed or px widths used
-				for (var i = self.items.length; i--;){
+				for (i = self.items.length; i--;) {
 					this._setItemWidth(self.items[i]);
 				}
 			}
@@ -325,47 +330,53 @@ Like masonry column shift, but works.
 
 		//full update of layout
 		_updateInterval: 0,
-		_update: function(from, to){
+		_update: function(from, to) {
 			//window.start = Date.now()
-			var self = this, o = self.options,
+			var self = this,
 				i = 0,
 				start = from || 0,
 				end = to || self.items.length,
 				colsNeeded = self._initLayoutParams();
 
-			//console.log("beforePlace:" + this.lastItems.length)
-			for (i = start; i < end; i++){
+			//console.log('beforePlace:' + this.lastItems.length)
+			for (i = start; i < end; i++) {
 				self._placeItem(self.items[i]);
 			}
-			//console.log("afterPlace:" + this.lastItems.length)
+			//console.log('afterPlace:' + this.lastItems.length)
 
 			self._maximizeHeight();
 			self._trigger('reflow');
-			//console.log("time elapsed: " + (Date.now() - window.start) + "ms")
+			//console.log('time elapsed: ' + (Date.now() - window.start) + 'ms')
 		},
 
 		//set item width based on span/colWidth
-		_setItemWidth: function(el){
+		_setItemWidth: function(el) {
 			var span = el.span > this.lastItems.length ? this.lastItems.length : el.span,
 				cols = this.lastItems.length,
-				colWeight = span/cols;
-			if (this.options.useCalc){
+				colWeight = span / cols;
+			if (this.options.useCalc) {
 				el.w = (100 * colWeight);
-				el.style.width = this.prefixedCalc + "(" + (100 * colWeight) +"% - " + (el.mr + el.ml + (this.pl + this.pr) * colWeight) + "px)";
+				el.style.width = this.prefixedCalc + '(' + (100 * colWeight) + '% - ' + (el.mr + el.ml + (this.pl + this.pr) * colWeight) + 'px)';
 			} else {
-				el.w = ~~(this.colWidth * span - (el.ml + el.mr))
-				el.style.width =  el.w + "px";
+				el.w = ~~ (this.colWidth * span - (el.ml + el.mr));
+				el.style.width = el.w + 'px';
 			}
 		},
 
-		_placeItem: function(e){
-			var self = this, o = self.options;
+		_placeItem: function(e) {
+			var self = this,
+				o = self.options;
 
 			var lastHeights = self.lastHeights,
 				lastItems = self.lastItems,
 				colPriority = self.colPriority,
-				minCol = 0, minH = 0,
-				h = 0, c = 0, t = 0, end = 0, start = 0,
+				minCol = 0,
+				minH = 0,
+				h = 0,
+				c = 0,
+				t = 0,
+				end = 0,
+				start = 0,
 				span = e.span > lastItems.length ? lastItems.length : e.span,
 				newH = 0,
 				spanCols = [], //numbers of spanned columns
@@ -373,24 +384,24 @@ Like masonry column shift, but works.
 				style,
 				floatCol = e.floatCol;
 
-			//console.log("------ item")
-			//console.log("span:"+span)			
+			//console.log('------ item')
+			//console.log('span:'+span)			
 
 			//Find proper column to place item
 			//console.log(colPriority)
-			if (floatCol){
+			if (floatCol) {
 				floatCol = floatCol > 0 ? Math.min(floatCol, lastItems.length - span) : (lastItems.length + floatCol);
 			}
-			if (span === 1){
+			if (span === 1) {
 				//Single-span element
-				if (floatCol === null){
+				if (floatCol === null) {
 					//no align
 					minCol = colPriority.shift();
 				} else {
 					//predefined column to align
 					minCol = floatCol;
-					for (c = 0; c < colPriority.length; c++){
-						if (colPriority[c] == minCol){
+					for (c = 0; c < colPriority.length; c++) {
+						if (colPriority[c] == minCol) {
 							colPriority.splice(c, 1);
 							break;
 						}
@@ -398,60 +409,61 @@ Like masonry column shift, but works.
 				}
 				spanCols.push(minCol);
 				minH = lastHeights[minCol];
-			} else if (span >= lastItems.length){//Full-span element
+			} else if (span >= lastItems.length) { //Full-span element
 				minCol = 0;
 				minH = lastHeights[colPriority[colPriority.length - 1]];
 				spanCols = self.baseOrder.slice();
 				spanCols.length = lastHeights.length;
 				colPriority.length = 0;
-			} else {//Some-span element
-				if (floatCol !== null){
+			} else { //Some-span element
+				if (floatCol !== null) {
 					minCol = floatCol;
 					minH = Math.max.apply(Math, lastHeights.slice(minCol, minCol + span));
 					//console.log(lastHeights.slice(minCol, span))
-					//console.log("fCol:" + floatCol + " minH: " + minH)
+					//console.log('fCol:' + floatCol + ' minH: ' + minH)
 				} else {
 					//Make span heights alternatives
 					spanHeights.length = 0;
-					minH = Infinity; minCol = 0;
-					for (c = 0; c <= lastItems.length - span; c++){
-						spanHeights[c] = Math.max.apply(Math, lastHeights.slice(c, c+span))
-						if (spanHeights[c] < minH){
+					minH = Infinity;
+					minCol = 0;
+					for (c = 0; c <= lastItems.length - span; c++) {
+						spanHeights[c] = Math.max.apply(Math, lastHeights.slice(c, c + span));
+						if (spanHeights[c] < minH) {
 							minCol = c;
 							minH = spanHeights[c];
 						}
 					}
 				}
 				//Replace priorities
-				for (c = 0; c < colPriority.length; ){
-					if (colPriority[c] >= minCol && colPriority[c] < minCol + span){
-						spanCols.push(colPriority.splice(c, 1)[0])
-					} else {c++}
+				for (c = 0; c < colPriority.length;) {
+					if (colPriority[c] >= minCol && colPriority[c] < minCol + span) {
+						spanCols.push(colPriority.splice(c, 1)[0]);
+					} else c++;
 				}
 			}
 
 			//console.log(spanCols)
 			//console.log(lastHeights)
-			//console.log("↑ spanCols to ↓")
+			//console.log('↑ spanCols to ↓')
 
 			//TODO: correct to work ok with options
 			e.top = ~~minH; //stupid save value for translate3d
 			if (o.useTranslate3d) {
-				var offset = (100 * minCol/span) + "% + " + ~~((e.ml + e.mr) * minCol/span) + "px";
-				if (o.useCalc){
-					e.style[cssPrefix + "transform"] = this.prefixedTranslate3d + "( " + this.prefixedCalc + "(" + offset + "), " + e.top + "px, 0)";
+				var offset = (100 * minCol / span) + '% + ' + ~~((e.ml + e.mr) * minCol / span) + 'px';
+				if (o.useCalc) {
+					e.style[cssPrefix + 'transform'] = this.prefixedTranslate3d + '( ' + this.prefixedCalc + '(' + offset + '), ' + e.top + 'px, 0)';
 				} else {
 					//Safari won't set -webkit-calc in element.style
-					e.style[cssPrefix + "transform"] = this.prefixedTranslate3d + "(" + ~~(self.colWidth * minCol) + "px, " + e.top + "px, 0)";
+					e.style[cssPrefix + 'transform'] = this.prefixedTranslate3d + '(' + ~~(self.colWidth * minCol) + 'px, ' + e.top + 'px, 0)';
 				}
 			} else {
-				e.style.top = e.top + "px";
-				e.style.left = self.colWidth * minCol + self.pl + "px";
+				e.style.top = e.top + 'px';
+				e.style.left = self.colWidth * minCol + self.pl + 'px';
 			}
 
 			//if element was added first time and is out of flow - show it
 			//e.style.opacity = 1;
-			e.removeAttribute("hidden")
+			e.removeAttribute('hidden');
 
 			newH = self._getBottom(e); //this is the most difficult operation (e.clientHeight)
 			for (t = 0; t < spanCols.length; t++) {
@@ -460,101 +472,106 @@ Like masonry column shift, but works.
 			}
 
 			//console.log(lastItems)
-			//console.log("↑ self.lastHeights to ↓")
+			//console.log('↑ self.lastHeights to ↓')
 			//console.log(self.lastHeights)
-			//console.log("minCol:"+minCol+" minH:"+minH+" newH:"+newH)
+			//console.log('minCol:'+minCol+' minH:'+minH+' newH:'+newH)
 			//console.log(colPriority)
-			//console.log("↑ colPriorities to ↓")
+			//console.log('↑ colPriorities to ↓')
 
 			//Update colPriority
-			for (c = colPriority.length; c--;){
+			for (c = colPriority.length; c--;) {
 				h = self.lastHeights[colPriority[c]];
-				if (newH >= h){
-					Array.prototype.splice.apply(colPriority, [c+1,0].concat(spanCols));
+				if (newH >= h) {
+					Array.prototype.splice.apply(colPriority, [c + 1, 0].concat(spanCols));
 					break;
 				}
 			}
-			if (colPriority.length < lastHeights.length){
-				Array.prototype.unshift.apply(colPriority, spanCols)
+			if (colPriority.length < lastHeights.length) {
+				Array.prototype.unshift.apply(colPriority, spanCols);
 				//self.colPriority = spanCols.concat(colPriority)
 			}
 		},
 
 		_getBottom: function(e) {
-			if (!e) return 0//this.pt;
+			if (!e) return 0; //this.pt;
 			//TODO: memrize height, look for height change to avoid reflow
 			return e.top + e.clientHeight + e.bt + e.bb + e.mb + e.mt;
 		},
 
-		_maximizeHeight: function(){
+		_maximizeHeight: function() {
 			var top = this.options.useTranslate3d ? this.pt : 0;
-			this.el.style.minHeight = this.lastHeights[this.colPriority[this.colPriority.length - 1]] + this.pb + top + "px";
+			this.el.style.minHeight = this.lastHeights[this.colPriority[this.colPriority.length - 1]] + this.pb + top + 'px';
 		}
-		
-	})
+
+	});
 
 
-	$.fn.waterfall = function (arg, arg2) {
-		if (typeof arg == "string") {//Call API method
-			return $(this).each(function (i, el) {
-				$(el).data("waterfall")[arg](arg2);
-			})
+	$.fn.waterfall = function(arg, arg2) {
+		if (typeof arg == 'string') { //Call API method
+			return $(this)
+				.each(function(i, el) {
+					$(el)
+						.data('waterfall')[arg](arg2);
+				});
 		} else {
 			var $this = $(this),
-			opts = $.extend({},$.parseDataAttributes(this[0]),arg);
+				opts = $.extend({}, $.parseDataAttributes(this[0]), arg);
 			if (opts.width && !opts.colMinWidth) {
-				opts.colMinWidth = opts.width
+				opts.colMinWidth = opts.width;
 			}
 			var wf = new Waterfall($this, opts);
-			if (!$this.data("waterfall")) $this.data("waterfall", wf);
+			if (!$this.data('waterfall')) $this.data('waterfall', wf);
 			return wf;
 		}
-	}
+	};
 
 
 	//Simple options parser. The same as $.fn.data(), or element.dataset but for zepto
 	if (!$.parseDataAttributes) {
-		$.parseDataAttributes = function(el){
+		$.parseDataAttributes = function(el) {
 			var data = {};
 			if (el.dataset) {
 				$.extend(data, el.dataset);
 			} else {
 				[].forEach.call(el.attributes, function(attr) {
 					if (/^data-/.test(attr.name)) {
-						var camelCaseName = attr.name.substr(5).replace(/-(.)/g, function ($0, $1) {
-							return $1.toUpperCase();
-						});
+						var camelCaseName = attr.name.substr(5)
+							.replace(/-(.)/g, function($0, $1) {
+								return $1.toUpperCase();
+							});
 						data[camelCaseName] = attr.value;
 					}
 				});
 			}
 			return data;
-		}
+		};
 	}
 
 	//prefix/features detector
-	function detectCSSPrefix(property){
-		if (!property) property = "transform";
 
-		var style = document.defaultView.getComputedStyle(document.body, "");
-		if (style[property]) return "";
-		if (style["-webkit-" + property]) return "-webkit-";
-		if (style["-moz-" + property]) return "-moz-";
-		if (style["-o-" + property]) return "-o-";
-		if (style["-khtml-" + property]) return "-khtml-";
+	function detectCSSPrefix(property) {
+		if (!property) property = 'transform';
+
+		var style = document.defaultView.getComputedStyle(document.body, '');
+		if (style[property]) return '';
+		if (style['-webkit-' + property]) return '-webkit-';
+		if (style['-moz-' + property]) return '-moz-';
+		if (style['-o-' + property]) return '-o-';
+		if (style['-khtml-' + property]) return '-khtml-';
 
 		return false;
 	}
 
 	//autostart
-	$(function () {
+	$(function() {
 		var defClass = window.waterfall && window.waterfall.defaultClass || Waterfall.defaultClass;
 
-		$("." + defClass).each(function (i, e){
-			var $e = $(e),
-				opts = window.waterfall || {};
-			$e.waterfall(opts);
-		});
-	})
+		$('.' + defClass)
+			.each(function(i, e) {
+				var $e = $(e),
+					opts = window.waterfall || {};
+				$e.waterfall(opts);
+			});
+	});
 
 })(window.jQuery || window.Zepto);
