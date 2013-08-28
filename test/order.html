@@ -42,38 +42,42 @@
 	.add.append{
 		margin-top: 30px;
 	}
+	.add.insert{
+		margin-top: 60px;
+	}
+	.add.delete{
+		margin-top: 90px;
+	}
 </style>
 
 <button class="add prepend">Prepend  100</button>
 <button class="add append">Append 100</button>
+<button class="add insert">Insert at random positions 30</button>
+<button class="add delete">Delete 30</button>
 
 <section class="container" data-width="90">
-		<div class="item" data-span="2" data-coslumn="1">Header col-2</div>
+		<div class="item" data-span="2" data-coslumn="1">0 Header col-2</div>
 		<div class="item">1</div>
-		<div class="item">4</div>
-		<div class="item">7</div>
-		<div class="item">10</div>
-		<div class="item">13</div>
 		<div class="item">2</div>
-		<div class="item">5</div>
-		<div class="item" data-span="2" data-fsloat="left">Div 5 left</div>
-		<div class="item">8</div>
-		<div class="item">11</div>
-		<div class="item">14</div>
 		<div class="item">3</div>
+		<div class="item">4</div>
+		<div class="item" data-span="2" data-fsloat="left">Div 5 left</div>
 		<div class="item">6</div>
-		<div class="item" data-span="2">9</div>
+		<div class="item">7</div>
+		<div class="item">8</div>
 		<div class="item" data-span="all" data-flosat="left">Div 9 all-span</div>
+		<div class="item">10</div>
+		<div class="item">11</div>
 		<div class="item">12</div>
+		<div class="item">13</div>
+		<div class="item">14</div>
 		<div class="item">15</div>
-		<div class="item">16</div>
 		<div class="item" data-span="2" data-colusmn="first">Div 16 first</div>
 		<div class="item">17</div>
 		<div class="item">18</div>
 		<div class="item">19</div>
 		<div class="item" data-flosat="right">20 right</div>
-		<div class="item">21</div>
-		<div class="item" data-span="3">Divider last</div>
+		<div class="item" data-span="3">21 Divider last</div>
 </section>
 
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
@@ -83,12 +87,11 @@
 
 <script>
 $(function(){
-	var idx = 20;
+	var idx = 21;
 
 	var wf = $(".container").waterfall();
 
 	$(".add.prepend").click(function(){
-		var t = Date.now()
 		var df = document.createDocumentFragment(),
 			div = document.createElement("div"),
 			items = "";
@@ -98,28 +101,48 @@ $(function(){
 			df.appendChild(div.firstChild)
 		}
 
+		var t = Date.now()
 		wf.el.insertBefore(df, wf.el.firstChild);
 		console.log(Date.now() - t + "ms")
 	})
 
+
 	$(".add.append").click(function(){
-		var t = Date.now()
 		var df = document.createDocumentFragment(),
 			div = document.createElement("div"),
 			items = "";
 
 		for (var i = 0; i < 100; i++){
-			items += getNewItem();
+			div.innerHTML = getNewItem();
+			df.appendChild(div.firstChild)
 		}
 
-		div.innerHTML = items;
-		var ch = div.children;
+		var t = Date.now()
+		wf.el.insertBefore(df, wf.el.firstChild);
+		console.log(Date.now() - t + "ms")
+	})
 
-		for (var i = 0; i < ch.length; i++){
-			df.appendChild(ch[i])
+
+	$(".add.insert").click(function(){
+		var div = document.createElement("div")
+
+		var t = Date.now()
+		for (var i = 0; i < 30; i++){
+			div.innerHTML = getNewItem();
+			wf.el.insertBefore(div.firstChild, wf.el.childNodes[~~(Math.random()*wf.el.childNodes.length)] || wf.el.firstChild)
 		}
 
-		wf.el.appendChild(df);
+		console.log(Date.now() - t + "ms")
+	})
+
+	$(".add.delete").click(function(){
+		var t = Date.now()
+		for (var i = 0; i < 15; i++){
+			if (!wf.el.childNodes.length) break;
+			wf.el.removeChild(wf.el.firstChild)
+			wf.el.removeChild(wf.el.lastChild)
+		}
+
 		console.log(Date.now() - t + "ms")
 	})
 

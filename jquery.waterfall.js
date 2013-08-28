@@ -149,7 +149,7 @@ Like masonry column shift, but works. */
 
 					if (target.nodeType !== 1) return;
 					if (target.parentNode !== this.el) return; //if insertee is below container
-					//console.log("--------" + target.className + " " + target.nextSibling)
+					//console.log("--------" + target.className + " next:" + target.nextSibling + " prev:" + target.previousSibling)
 
 					if (target.previousSibling && target.previousSibling.span && (!target.nextSibling || !target.nextSibling.span)) {
 						this._appendedItems([target]); //append specific case, times faster than _insertedItems
@@ -160,6 +160,7 @@ Like masonry column shift, but works. */
 					var el = (e.originalEvent || e).target;
 
 					if (el.nodeType !== 1) return;
+					if (el.parentNode !== this.el) return; //if insertee is below container
 
 					this._removedItems([el]);
 				}.bind(this));
@@ -183,7 +184,7 @@ Like masonry column shift, but works. */
 		_appendedItems: function(items) {
 			var l = items.length,
 				i = 0;
-			//console.log("append: " + items)
+			//console.log("append to: " + this.items.length)
 			for (; i < l; i++) {
 				var el = items[i];
 				if (el.nodeType !== 1) continue;
@@ -203,7 +204,7 @@ Like masonry column shift, but works. */
 
 		//if new items inserted somewhere inside the list
 		_insertedItems: function(items) {
-			//console.log("insert" + items)
+			//console.log("insert: " + this.items.length)
 			//clear old items
 			this.items.length = 0;
 
@@ -222,6 +223,7 @@ Like masonry column shift, but works. */
 
 			for (var i = 0; i < itemsL; i++){
 				if (children[i].nodeType !== 1) continue;
+				if (!children[i].span) continue;
 				this.items.push(children[i]);
 			}
 			this.lastItem = this.items[this.items.length - 1];
@@ -237,12 +239,13 @@ Like masonry column shift, but works. */
 			//reinit items
 			this.items.length = 0;
 			for (var i = 0; i < cl; i++) {
-				if (childItems[i] !== 1) continue;
+				if (childItems[i].nodeType !== 1) continue;
 				this.items.push(childItems[i]);
 			}
+			//console.log("after remove:" + this.items.length)
 			this.lastItem = this.items[this.items.length - 1];
 
-			this._update();
+			this.reflow();
 		},
 
 		//simple trigger routine
