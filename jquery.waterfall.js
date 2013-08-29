@@ -122,6 +122,7 @@ Like masonry column shift, but works. */
 				this.observer = new MutationObserver(function(mutations) {
 					var mNum = mutations.length;
 					for (var i = 0; i < mNum; i++) {
+						//console.log(mutations[i])
 						if (mutations[i].removedNodes.length) {
 							this._removedItems(Array.prototype.slice.apply(mutations[i].removedNodes));
 						}
@@ -184,7 +185,7 @@ Like masonry column shift, but works. */
 		_appendedItems: function(items) {
 			var l = items.length,
 				i = 0;
-			//console.log("append to: " + this.items.length)
+			//console.log("append: " + this.items.length)
 			for (; i < l; i++) {
 				var el = items[i];
 				if (el.nodeType !== 1) continue;
@@ -235,13 +236,13 @@ Like masonry column shift, but works. */
 		_removedItems: function(items) {
 			var childItems = this.el.childNodes,
 				cl = childItems.length;
+			//console.log("before removed: " + this.items.length)
 
 			//reinit items
-			this.items.length = 0;
-			for (var i = 0; i < cl; i++) {
-				if (childItems[i].nodeType !== 1) continue;
-				this.items.push(childItems[i]);
+			for (var i = 0; i < items.length; i++){
+				this.items.splice(this.items.indexOf(items[i]), 1);
 			}
+
 			//console.log("after remove:" + this.items.length)
 			this.lastItem = this.items[this.items.length - 1];
 
