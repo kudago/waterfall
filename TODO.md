@@ -1,3 +1,14 @@
+* Make animated inserting to the any position
+
+* Make drag'n'dropping with saving position
+
+* Correctly handle changing size of item
+
+* make rational spans
+* make item-specific width
+
+* utilize modernizr to detect features
+
 * Insert inside the list - animate displacing
 
 * Make layouter - generic layout description thing

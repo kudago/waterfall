@@ -53,9 +53,10 @@ Like masonry column shift, but works. */
 					var dummy = document.createElement('div'),
 						props = ['calc', '-webkit-calc', '-moz-calc', '-o-calc'];
 					for (var i = 0; i < props.length; ++i) {
-						var prop = props[i];
-						dummy.style.cssText = cssPrefix + 'transform: translate3d(' + prop + '(1px), 0, 0);';
-						if (dummy.style.length && dummy.style[cssPrefix + 'transform']) {
+						var prop = props[i], propStr =  prop + '(1px)';
+						dummy.style.cssText = cssPrefix + 'transform: translate3d(' + [propStr, propStr, propStr].join(',') +');';
+						//console.log(dummy.style[cssPrefix + 'transform'])
+						if (dummy.style.length && dummy.style[cssPrefix + 'transform'].length > 14) {
 							return prop;
 						}
 					}
