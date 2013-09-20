@@ -81,11 +81,7 @@ Like masonry column shift, but works. */
 
 			//populate items
 			var items;
-			if (o.itemSelector) {
-				items = self.$el.find(o.itemSelector);
-				items.detach();
-				self.$el.children().remove();
-			} else {
+			{
 				items = self.$el.children();
 			}
 
@@ -98,7 +94,7 @@ Like masonry column shift, but works. */
 
 			items.each(function(i, e) {
 				//self.items[i].data('id', i);
-				self.items.push(e);
+				self._addItem(e);
 				self._initItem(e);
 			});
 
@@ -114,6 +110,11 @@ Like masonry column shift, but works. */
 			}
 
 			this._observeMutations();
+		},
+
+		_addItem: function(item){
+			if (item.getAttribute("data-exclude")) return;
+			this.items.push(item);
 		},
 
 		_observeMutations: function() {
@@ -190,7 +191,7 @@ Like masonry column shift, but works. */
 			for (; i < l; i++) {
 				var el = items[i];
 				if (el.nodeType !== 1) continue;
-				this.items.push(el);
+				this._addItem(el);
 				this._initItem(el); //TODO: optimize
 				this._setItemWidth(el);
 			}
@@ -226,7 +227,7 @@ Like masonry column shift, but works. */
 			for (var i = 0; i < itemsL; i++){
 				if (children[i].nodeType !== 1) continue;
 				if (!children[i].span) continue;
-				this.items.push(children[i]);
+				this._addItem(children[i]);
 			}
 			this.lastItem = this.items[this.items.length - 1];
 
