@@ -535,14 +535,16 @@ Like masonry column shift, but works. */
 
 	$.fn.waterfall = function(arg, arg2) {
 		if (typeof arg == 'string') { //Call API method
-			return $(this)
-				.each(function(i, el) {
-					$(el)
-						.data('waterfall')[arg](arg2);
+			return $(this).each(function(i, el) {
+					$(el).data('waterfall')[arg](arg2);
 				});
 		} else {
+			if (!this.length) {
+				throw new Error("No element passed to waterfall")
+				return false;
+			};
 			var $this = $(this),
-				opts = $.extend({}, $.parseDataAttributes(this[0]), arg);
+				opts = $.extend({}, $.parseDataAttributes($this[0]), arg);
 			if (opts.width && !opts.colMinWidth) {
 				opts.colMinWidth = opts.width;
 			}
@@ -557,19 +559,7 @@ Like masonry column shift, but works. */
 	if (!$.parseDataAttributes) {
 		$.parseDataAttributes = function(el) {
 			var data = {};
-			if (el.dataset) {
-				$.extend(data, el.dataset);
-			} else {
-				[].forEach.call(el.attributes, function(attr) {
-					if (/^data-/.test(attr.name)) {
-						var camelCaseName = attr.name.substr(5)
-							.replace(/-(.)/g, function($0, $1) {
-								return $1.toUpperCase();
-							});
-						data[camelCaseName] = attr.value;
-					}
-				});
-			}
+			$.extend(data, el.dataset);
 			return data;
 		};
 	}
