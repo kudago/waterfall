@@ -61,7 +61,7 @@ Like masonry column shift, but works. */
 						}
 					}
 				})();
-				o.useCalc = !! this.prefixedCalc;
+				o.useCalc = !!this.prefixedCalc;
 			}
 			//console.log(this.prefixedCalc);
 			if (o.useTranslate3d === undefined) {
@@ -333,6 +333,7 @@ Like masonry column shift, but works. */
 			self.colWidth = self.el.clientWidth - self.pl - self.pr;
 
 			self.lastItems.length = ~~(self.colWidth / o.colMinWidth) || 1; //needed length
+			console.log(o.colMinWidth)
 
 			var top = o.useTranslate3d ? 0 : self.pt;
 			for (i = 0; i < self.lastItems.length; i++) {
@@ -544,7 +545,7 @@ Like masonry column shift, but works. */
 				return false;
 			};
 			var $this = $(this),
-				opts = $.extend({}, $.parseDataAttributes($this[0]), arg);
+				opts = $.extend({}, {"colMinWidth": ~~$this[0].getAttribute("data-col-min-width") ||~~$this[0].getAttribute("data-width")}, arg);
 			if (opts.width && !opts.colMinWidth) {
 				opts.colMinWidth = opts.width;
 			}
@@ -553,16 +554,6 @@ Like masonry column shift, but works. */
 			return wf;
 		}
 	};
-
-
-	//Simple options parser. The same as $.fn.data(), or element.dataset but for zepto
-	if (!$.parseDataAttributes) {
-		$.parseDataAttributes = function(el) {
-			var data = {};
-			$.extend(data, el.dataset);
-			return data;
-		};
-	}
 
 	//prefix/features detector
 
