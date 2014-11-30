@@ -86,8 +86,8 @@ Like masonry column shift, but works. */
 			}
 
 			//remove text nodes
-			for (var i = 0; i < self.el.childNodes.length;){
-				if (self.el.childNodes[i].nodeType !== 1){
+			for (var i = 0; i < self.el.childNodes.length;) {
+				if (self.el.childNodes[i].nodeType !== 1 && self.el.childNodes[i].nodeType !== 8){
 					self.el.removeChild(self.el.childNodes[i]);
 				} else i++;
 			}
@@ -150,7 +150,7 @@ Like masonry column shift, but works. */
 					var evt = (e.originalEvent || e),
 						target = evt.target;
 
-					if (target.nodeType !== 1) return;
+					if (target.nodeType !== 1 && target.nodeType !== 8) return;
 					if (target.parentNode !== this.el) return; //if insertee is below container
 					//console.log("--------" + target.className + " next:" + target.nextSibling + " prev:" + target.previousSibling)
 
@@ -162,7 +162,7 @@ Like masonry column shift, but works. */
 				}.bind(this)).on('DOMNodeRemoved', function(e) {
 					var el = (e.originalEvent || e).target;
 
-					if (el.nodeType !== 1) return;
+					if (el.nodeType !== 1 && el.nodeType !== 8) return;
 					if (el.parentNode !== this.el) return; //if insertee is below container
 
 					this._removedItems([el]);
@@ -197,6 +197,7 @@ Like masonry column shift, but works. */
 			}
 
 			for (i = 0; i < l; i++) {
+			    if (items[i].nodeType !== 1) continue;
 				this._placeItem(items[i]);
 			}
 
@@ -215,7 +216,7 @@ Like masonry column shift, but works. */
 			var l = items.length;
 			for (var i = 0; i < l; i++) {
 				var el = items[i];
-				if (el.nodeType !== 1) continue;
+				if (el.nodeType !== 1 && el.nodeType !== 8) continue;
 				this._initItem(el); //TODO: optimize
 				this._setItemWidth(el);
 			}
@@ -225,7 +226,7 @@ Like masonry column shift, but works. */
 				itemsL = children.length;
 
 			for (var i = 0; i < itemsL; i++){
-				if (children[i].nodeType !== 1) continue;
+				if (children[i].nodeType !== 1 && el.nodeType !== 8) continue;
 				if (!children[i].span) continue;
 				this._addItem(children[i]);
 			}
