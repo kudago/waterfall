@@ -331,7 +331,7 @@ Like masonry column shift, but works. */
 			self.colPriority.length = 0; //most left = most minimal column
 			self.baseOrder.length = 0;
 
-			self.colWidth = self.el.clientWidth - self.pl - self.pr;
+			self.colWidth = self.el.offsetWidth - self.pl - self.pr;
 
 			self.lastItems.length = ~~(self.colWidth / o.colMinWidth) || 1; //needed length
 			console.log(o.colMinWidth)
@@ -524,7 +524,7 @@ Like masonry column shift, but works. */
 		_getBottom: function(e) {
 			if (!e) return 0; //this.pt;
 			//TODO: memrize height, look for height change to avoid reflow
-			return e.top + e.clientHeight + e.bt + e.bb + e.mb + e.mt;
+			return e.top + e.offsetHeight + e.bt + e.bb + e.mb + e.mt;
 		},
 
 		_maximizeHeight: function() {
