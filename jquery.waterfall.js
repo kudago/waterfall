@@ -334,7 +334,7 @@ Like masonry column shift, but works. */
 			self.colWidth = self.el.offsetWidth - self.pl - self.pr;
 
 			self.lastItems.length = ~~(self.colWidth / o.colMinWidth) || 1; //needed length
-			console.log(o.colMinWidth)
+			// console.log(o.colMinWidth)
 
 			var top = o.useTranslate3d ? 0 : self.pt;
 			for (i = 0; i < self.lastItems.length; i++) {
