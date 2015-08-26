@@ -225,22 +225,41 @@ Like masonry column shift, but works. */
 		},
 
         /**
-         * @desc 
+         * @desc Make Node changing observer - the fastest way to add items
+         * - on dom change sync internal array of items
          * @private
          */
 		_observeMutations: function() {
-			//Make Node changing observer - the fastest way to add items
+
+            // check if browser support observers
 			if (window.MutationObserver) {
+
 				//FF, chrome
+                // create new observer for children nodes
 				this.observer = new MutationObserver(function(mutations) {
-					var mNum = mutations.length;
+
+                    // get size of changes
+                    var mNum = mutations.length;
+
+                    // for each change take action
 					for (var i = 0; i < mNum; i++) {
+
 						//console.log(mutations[i])
+
+                        // check if items were removed
 						if (mutations[i].removedNodes.length) {
+
+                            // remove items from internal array of items
 							this._removedItems(Array.prototype.slice.apply(mutations[i].removedNodes));
 						}
+
+                        // check if items were added
 						if (mutations[i].addedNodes.length) {
+
+                            // add items to internal array of items
 							var nodes = Array.prototype.slice.apply(mutations[i].addedNodes);
+
+                            // add nodes to dom
 							if (mutations[i].nextSibling) {
 								this._insertedItems(nodes);
 							} else {
@@ -250,34 +269,54 @@ Like masonry column shift, but works. */
 					}
 				}.bind(this));
 
+                // set observe all childrens of container
 				this.observer.observe(this.el, {
 					attributes: false,
 					childList: true,
 					characterData: false
 				});
 			} else {
+
 				//opera, ie
-				this.$el.on('DOMNodeInserted', function(e) {
-					var evt = (e.originalEvent || e),
-						target = evt.target;
+				this.$el
 
-					if (target.nodeType !== 1 && target.nodeType !== 8) return;
-					if (target.parentNode !== this.el) return; //if insertee is below container
-					//console.log("--------" + target.className + " next:" + target.nextSibling + " prev:" + target.previousSibling)
+                    // handle action when new dom was inserted
+                    .on('DOMNodeInserted', function(e) {
+                        var evt = (e.originalEvent || e),
+                            target = evt.target;
 
-					if (target.previousSibling && target.previousSibling.span && (!target.nextSibling || !target.nextSibling.span)) {
-						this._appendedItems([target]); //append specific case, times faster than _insertedItems
-					} else {
-						this._insertedItems([target]);
-					}
-				}.bind(this)).on('DOMNodeRemoved', function(e) {
-					var el = (e.originalEvent || e).target;
+                        // check is new node is text
+                        if (target.nodeType !== 1 && target.nodeType !== 8) return;
 
-					if (el.nodeType !== 1 && el.nodeType !== 8) return;
-					if (el.parentNode !== this.el) return; //if insertee is below container
+                        //if insertee is below container
+                        if (target.parentNode !== this.el) return;
 
-					this._removedItems([el]);
-				}.bind(this));
+                        //console.log("--------" + target.className + " next:" + target.nextSibling + " prev:" + target.previousSibling)
+
+                        // check if new item have special case
+                        if (target.previousSibling && target.previousSibling.span && (!target.nextSibling || !target.nextSibling.span)) {
+                            //append specific case, times faster than _insertedItems
+                            this._appendedItems([target]);
+                        } else {
+                            this._insertedItems([target]);
+                        }
+                    }.bind(this))
+
+                    // handle action when dom was removed
+                    .on('DOMNodeRemoved', function(e) {
+
+                        // get target
+                        var el = (e.originalEvent || e).target;
+
+                        // check is removed node was text
+                        if (el.nodeType !== 1 && el.nodeType !== 8) return;
+
+                        //if insertee is below container
+                        if (el.parentNode !== this.el) return;
+
+                        // remove item from list
+                        this._removedItems([el]);
+                    }.bind(this));
 			}
 		},
 
