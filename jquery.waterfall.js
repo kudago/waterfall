@@ -679,7 +679,7 @@ Like masonry column shift, but works. */
 
         /**
          * @desc set item width based on span/colWidth
-         * @param {jquery dom object} el - element whitch should be changed
+         * @param {jquery dom object} el - element which should be changed
          * @private
          */
 		_setItemWidth: function(el) {
@@ -714,11 +714,14 @@ Like masonry column shift, but works. */
 
 
         /**
-         * @desc
-         * @param e
+         * @desc set position of item in array of items.
+         * @todo add docs
+         * @param {jquery dom object} e - element which should be changed
          * @private
          */
 		_placeItem: function(e) {
+
+            // set local vars
 			var self = this,
 				o = self.options;
 
@@ -747,16 +750,25 @@ Like masonry column shift, but works. */
 			if (floatCol) {
 				floatCol = floatCol > 0 ? Math.min(floatCol, lastItems.length - span) : (lastItems.length + floatCol);
 			}
+
+            // check amount of columns
 			if (span === 1) {
-				//Single-span element
+
+				// single-span element
 				if (floatCol === null) {
+
 					//no align
 					minCol = colPriority.shift();
 				} else {
+
 					//predefined column to align
 					minCol = floatCol;
+
+
 					for (c = 0; c < colPriority.length; c++) {
+
 						if (colPriority[c] == minCol) {
+
 							colPriority.splice(c, 1);
 							break;
 						}
