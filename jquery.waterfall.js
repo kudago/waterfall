@@ -348,27 +348,55 @@ Like masonry column shift, but works. */
 			return self;
 		},
 
-		//========================= Techs
-		//called by mutation observer
+
+
+        /**
+         * @desc sync passed array of items with internal list of item and update position of each item
+         * - called by mutation observer
+         * @param {Array} items - list of container childrens, jquery dom objects
+         * @private
+         */
 		_appendedItems: function(items) {
+
+            // local vars
 			var l = items.length,
 				i = 0;
+
 			//console.log("append: " + this.items.length)
+            // touch each item on list
 			for (; i < l; i++) {
+
+                // get item
 				var el = items[i];
+
+                // check item type. Dont touch text node
 				if (el.nodeType !== 1) continue;
+
+                // append item to array of items
 				this._addItem(el);
-				this._initItem(el); //TODO: optimize
+
+                // set styles for dom item
+                //TODO: optimize
+				this._initItem(el);
+
+                // set with based on calculated valued
 				this._setItemWidth(el);
 			}
 
+            // update position of each item in array
 			for (i = 0; i < l; i++) {
+
+                // dont touch text nodes
 			    if (items[i].nodeType !== 1) continue;
+
+                // udpdate position
 				this._placeItem(items[i]);
 			}
 
+            // update refs to last item
 			this.lastItem = this.items[this.items.length - 1];
 
+            // set proper height of container
 			this._maximizeHeight();
 		},
 
