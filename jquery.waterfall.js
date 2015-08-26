@@ -32,6 +32,7 @@ Like masonry column shift, but works. */
 	Waterfall.defaultClass = 'waterfall';
 
 
+
     /**
      * @desc extend definition of plugin prototype.
      * - add default options
@@ -51,6 +52,8 @@ Like masonry column shift, but works. */
 			//callbacks
 			reflow: null
 		},
+
+
 
         /**
          * @desc make plugin works.
@@ -210,6 +213,8 @@ Like masonry column shift, but works. */
 			this._observeMutations();
 		},
 
+
+
         /**
          * @desc add item to internal list od items
          * @param {jQuery dom node} item
@@ -223,6 +228,8 @@ Like masonry column shift, but works. */
             // add item to array
 			this.items.push(item);
 		},
+
+
 
         /**
          * @desc Make Node changing observer - the fastest way to add items
@@ -320,15 +327,24 @@ Like masonry column shift, but works. */
 			}
 		},
 
-		//==========================API
-		//Ensures column number correct, reallocates items
+
+
+        /**
+         * @desc API :: Ensures column number correct, reallocates items
+         * @returns {Waterfall}
+         */
 		reflow: function() {
+            // get local vars
 			var self = this,
 				o = self.options;
 
+            // clear timeout from last timeout
 			window.clearTimeout(self._updateInterval);
+
+            // trigger _update function after timeout have done
 			self._updateInterval = window.setTimeout(self._update.bind(self), o.updateDelay);
 
+            // return Waterfall instance
 			return self;
 		},
 
