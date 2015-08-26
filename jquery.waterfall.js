@@ -32,7 +32,11 @@ Like masonry column shift, but works. */
 	Waterfall.defaultClass = 'waterfall';
 
 
-
+    /**
+     * @desc extend definition of plugin prototype.
+     * - add default options
+     * - add all internal methods used by plugin.
+     */
 	$.extend(Waterfall.prototype, {
 		options: {
 			colMinWidth: 300, //width of column, used to calculate number of columns possible to display
@@ -48,86 +52,161 @@ Like masonry column shift, but works. */
 			reflow: null
 		},
 
+        /**
+         * @desc make plugin works.
+         * - hide container,
+         * - check if plugin should use calc or css translate3d
+         * - get dom childrens of container, save it in items attr and remove text node
+         * - update styles of each children on list
+         * - add window resize listener if needed
+         * - add MutationObserver to remove/add new items on list if browser will handle this
+         * @param {Object} opts - passed in plugin init
+         * @private
+         */
 		_create: function(opts) {
+
+            // local vard
 			var self = this,
 				o = self.options = $.extend({}, self.options, opts);
 
+            // init basic vars
 			this.items = [];
-
-			//init some vars
 			self.lastHeights = [];
 			self.lastItems = [];
 			self.colPriority = []; //most left = most minimal column
 			self.baseOrder = [];
 
+            // get styles of container
 			var cStyle = getComputedStyle(self.el);
+
+            // hide element
 			self.el.hidden = true;
-			self.el.style.minHeight = cStyle.height; //prevent scrollbar width changing
+
+            // prevent scrollbar width changing
+			self.el.style.minHeight = cStyle.height;
+
+            // set position relative if contianer have static position
 			if (self.$el.css('position') === 'static') self.el.style.position = 'relative';
 
 			//detect placing mode needed
+            // check if useCalc option is setted by used
 			if (o.useCalc === undefined) {
-				//transform calc detect
+
+                /**
+                 * @desc check if calc function can be used by browser
+                 */
 				this.prefixedCalc = (function() {
+
+                    // get test dom element
 					var dummy = document.createElement('div'),
+
+                        // set list of properties to test
 						props = ['calc', '-webkit-calc', '-moz-calc', '-o-calc'];
+
+                    // check each property from list
 					for (var i = 0; i < props.length; ++i) {
-						var prop = props[i], propStr =  prop + '(1px)';
+
+						var prop = props[i],
+                            propStr =  prop + '(1px)';
+
+                        // create css style needed to test
 						dummy.style.cssText = cssPrefix + 'transform: translate3d(' + [propStr, propStr, propStr].join(',') +');';
+
 						//console.log(dummy.style[cssPrefix + 'transform'])
+
+                        // check if dom have needed styles apply
 						if (dummy.style.length && dummy.style[cssPrefix + 'transform'].length > 14) {
 							return prop;
 						}
 					}
 				})();
+
+                // change options useCalc and verify is calc function is used by browser
 				o.useCalc = !!this.prefixedCalc;
 			}
+
 			//console.log(this.prefixedCalc);
+            // check if useCalc option is setted by used
 			if (o.useTranslate3d === undefined) {
+
+                /**
+                 * @desc check if browser can use css translate3d propery
+                 */
 				this.prefixedTranslate3d = (function() {
+
+                    // get test dom element
 					var dummy = document.createElement('div');
+
+                    // set list of properties to test
 					var props = ['translate3d', '-webkit-translate3d', '-moz-translate3d', '-o-translate3d'];
+
 					for (var i = 0; i < props.length; ++i) {
+
 						var prop = props[i];
-						dummy.style.cssText = cssPrefix + 'transform:' + prop + '(1px, 0, 0);';
-						if (dummy.style.length)
-							return prop;
+
+                        // create css style needed to test
+                        dummy.style.cssText = cssPrefix + 'transform:' + prop + '(1px, 0, 0);';
+
+                        // check if dom have needed styles apply
+						if (dummy.style.length){
+                            return prop;
+                        }
 					}
 				})();
-				o.useTranslate3d = !! this.prefixedTranslate3d;
+
+                // check if browser have use css translate3d property
+				o.useTranslate3d = !!this.prefixedTranslate3d;
 			}
 			//console.log(this.prefixedTranslate3d)
 
 			//populate items
 			var items;
+
+            // get list of dom childerns
 			{
 				items = self.$el.children();
 			}
 
-			//remove text nodes
+			// remove text nodes
 			for (var i = 0; i < self.el.childNodes.length;) {
+
+                // check dom node type
 				if (self.el.childNodes[i].nodeType !== 1 && self.el.childNodes[i].nodeType !== 8){
 					self.el.removeChild(self.el.childNodes[i]);
-				} else i++;
+				} else {
+                    i++;
+                }
 			}
 
+            // for each children add item to list and init styles
 			items.each(function(i, e) {
 				//self.items[i].data('id', i);
+
+                // add item to internal items list
 				self._addItem(e);
+
+                // apply needed styles to item
 				self._initItem(e);
 			});
 
+            // get dom refs to last children
 			self.lastItem = self.items[self.items.length - 1];
 
+            // show container
 			self.el.removeAttribute("hidden");
 
+            // set proper styles for each item in items array
 			self._update();
 
+            // verify is autoresise is on
 			if (o.autoresize) {
+
+                // trigger reflow function when window resize event occure
 				$(window)
 					.resize(self.reflow.bind(self));
 			}
 
+            // use MutationObserver functionality to add/remove items on list if browser can handle this
 			this._observeMutations();
 		},
 
