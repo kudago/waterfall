@@ -581,7 +581,17 @@ Like masonry column shift, but works. */
 			}
 		},
 
+
+
+        /**
+         * @desc
+         * @todo make docs
+         * @returns {Number}
+         * @private
+         */
 		_initLayoutParams: function() {
+
+            // set local vars
 			var self = this,
 				o = self.options,
 				cStyle = window.getComputedStyle(self.el),
@@ -603,6 +613,7 @@ Like masonry column shift, but works. */
 			// console.log(o.colMinWidth)
 
 			var top = o.useTranslate3d ? 0 : self.pt;
+
 			for (i = 0; i < self.lastItems.length; i++) {
 				self.lastHeights.push(top);
 				self.baseOrder.push(i);
@@ -613,6 +624,7 @@ Like masonry column shift, but works. */
 
 			//console.log(prevCols + '->' + self.lastItems.length);
 			if (!o.useCalc || prevCols !== self.lastItems.length) {
+
 				//set item widths carefully - if columns changed or px widths used
 				for (i = self.items.length; i--;) {
 					this._setItemWidth(self.items[i]);
