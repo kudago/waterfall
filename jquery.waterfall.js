@@ -676,7 +676,7 @@ Like masonry column shift, but works. */
 		},
 
 
-        
+
         /**
          * @desc set item width based on span/colWidth
          * @param {jquery dom object} el - element whitch should be changed
@@ -711,6 +711,13 @@ Like masonry column shift, but works. */
 			}
 		},
 
+
+
+        /**
+         * @desc
+         * @param e
+         * @private
+         */
 		_placeItem: function(e) {
 			var self = this,
 				o = self.options;
@@ -841,17 +848,37 @@ Like masonry column shift, but works. */
 			}
 		},
 
+
+
+        /**
+         * @desc get bottom edge position of item(in pixels)
+         * @param {jquery dom object} e - item
+         * @returns {*}
+         * @private
+         */
 		_getBottom: function(e) {
+
+            // check if param is seteted
 			if (!e) return 0; //this.pt;
+
 			//TODO: memrize height, look for height change to avoid reflow
 			return e.top + e.offsetHeight + e.bt + e.bb + e.mb + e.mt;
 		},
 
+
+
+        /**
+         * @desc update style(minHeight) of container
+         * @private
+         */
 		_maximizeHeight: function() {
+
+            // get top position
 			var top = this.options.useTranslate3d ? this.pt : 0;
+
+            // set new height based on padding, height and position of last item in height
 			this.el.style.minHeight = this.lastHeights[this.colPriority[this.colPriority.length - 1]] + this.pb + top + 'px';
 		}
-
 	});
 
 
