@@ -571,16 +571,25 @@ Like masonry column shift, but works. */
 		return false;
 	}
 
-	//autostart
-	$(function() {
-		var defClass = window.waterfall && window.waterfall.defaultClass || Waterfall.defaultClass;
 
-		$('.' + defClass)
-			.each(function(i, e) {
-				var $e = $(e),
-					opts = window.waterfall || {};
-				$e.waterfall(opts);
-			});
-	});
+    // run plugin after document ready
+    //
+    $(function() {
+
+        // get name of class for plugin
+        var defClass = window.waterfall && window.waterfall.defaultClass || Waterfall.defaultClass;
+
+        // find dom refs and init plugin
+        $('.' + defClass)
+            .each(function(i, e) {
+
+                // get jQ dom ref and run plugin.
+                var $e = $(e),
+                    opts = window.waterfall || {};
+
+                // init plugin
+                $e.waterfall(opts);
+            });
+    });
 
 })(window.jQuery || window.Zepto);
