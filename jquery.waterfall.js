@@ -510,18 +510,29 @@ Like masonry column shift, but works. */
 			}
 		},
 
-		//init item properties once item appended
+
+
+        /**
+         * @desc init item properties once item appended
+         * @param {jquery dom object} el - children of container
+         * @private
+         */
 		_initItem: function(el) {
+
+            // get variables
 			var o = this.options,
 				span = el.getAttribute('data-span') || 1,
 				floatVal = el.getAttribute('data-float') || el.getAttribute('data-column');
 
-			//set span
+			// set span
 			span = (span === 'all' ? o.maxCols : Math.max(0, Math.min(~~(span), o.maxCols)));
-			el.span = span; //quite bad, but no choice: dataset is sloow
 
-			//save heavy style-attrs
+            //quite bad, but no choice: dataset is sloow
+			el.span = span;
+
+			// save heavy style-attrs
 			var style = getComputedStyle(el);
+
 			el.mr = ~~(style.marginRight.slice(0, -2));
 			el.ml = ~~(style.marginLeft.slice(0, -2));
 			el.bt = ~~(style.borderTopWidth.slice(0, -2));
@@ -529,11 +540,11 @@ Like masonry column shift, but works. */
 			el.mt = ~~(style.marginTop.slice(0, -2)); //ignored because of offsetTop instead of style.top
 			el.mb = ~~(style.marginBottom.slice(0, -2));
 
-			//set style
+			// set style
 			el.style.position = 'absolute';
 			//this._setItemWidth(el); //make it external action to not to init frominside create
 
-			//parset float
+			// parset float
 			switch (floatVal) {
 				case null: //no float
 					el.floatCol = null;
@@ -551,14 +562,21 @@ Like masonry column shift, but works. */
 					break;
 			}
 
+            // check options
 			if (o.animateShow) {
+
+                // check if should be used css
 				if (o.useTranslate3d) {
 					//TODO: this below crashes chrome
 					//el.style[cssPrefix+'translate'] = 'translate3d(0, ' + this.lastHeights[this.colPriority[0]] + 'px ,0)'
 				} else {
+
+                    // set style for each item. Default value
 					el.style.top = this.lastHeights[this.colPriority[this.colPriority.length - 1]] + 'px';
 					el.style.left = this.colWidth * this.colPriority[this.colPriority.length - 1] + 'px';
 				}
+
+                // show item
 				el.removeAttribute('hidden');
 			}
 		},
