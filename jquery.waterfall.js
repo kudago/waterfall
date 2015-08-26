@@ -556,20 +556,32 @@ Like masonry column shift, but works. */
 		}
 	};
 
-	//prefix/features detector
 
-	function detectCSSPrefix(property) {
-		if (!property) property = 'transform';
+    
+    /**
+     * @desc Get name of css prefix based on document.defaultView styles
+     * @param {String} property
+     * @returns {*}
+     */
+    function detectCSSPrefix(property) {
 
-		var style = document.defaultView.getComputedStyle(document.body, '');
-		if (style[property]) return '';
-		if (style['-webkit-' + property]) return '-webkit-';
-		if (style['-moz-' + property]) return '-moz-';
-		if (style['-o-' + property]) return '-o-';
-		if (style['-khtml-' + property]) return '-khtml-';
+        // check default values
+        if (!property) property = 'transform';
 
-		return false;
-	}
+        // get values of all css properties that document.body can have
+        var style = document.defaultView.getComputedStyle(document.body, '');
+
+        // check if style property is in object
+        if (style[property]) return '';
+        if (style['-webkit-' + property]) return '-webkit-';
+        if (style['-moz-' + property]) return '-moz-';
+        if (style['-o-' + property]) return '-o-';
+        if (style['-khtml-' + property]) return '-khtml-';
+
+        // false if non of options is proper attr
+        return false;
+    }
+
 
 
     // run plugin after document ready
