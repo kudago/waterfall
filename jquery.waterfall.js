@@ -379,7 +379,7 @@ Like masonry column shift, but works. */
                 //TODO: optimize
 				this._initItem(el);
 
-                // set with based on calculated valued
+                // set width based on calculated valued
 				this._setItemWidth(el);
 			}
 
@@ -400,7 +400,14 @@ Like masonry column shift, but works. */
 			this._maximizeHeight();
 		},
 
-		//if new items inserted somewhere inside the list
+
+
+        /**
+         * @desc sync passed array of items with internal list of item and update position of each item
+         *  - if new items inserted somewhere inside the list
+         * @param {Array} items - list of container childrens, jquery dom objects
+         * @private
+         */
 		_insertedItems: function(items) {
 			//console.log("insert: " + this.items.length)
 			//clear old items
@@ -408,41 +415,73 @@ Like masonry column shift, but works. */
 
 			//init new items
 			var l = items.length;
+
 			for (var i = 0; i < l; i++) {
+
+                // get item
 				var el = items[i];
+
+                // check item type. Dont touch text node
 				if (el.nodeType !== 1 && el.nodeType !== 8) continue;
-				this._initItem(el); //TODO: optimize
+
+                // init styles for dom item
+                //TODO: optimize
+				this._initItem(el);
+
+                // set width based on calculated values
 				this._setItemWidth(el);
 			}
 
-			//reinit all items
+			// reinit all items
 			var children = this.el.childNodes,
 				itemsL = children.length;
 
 			for (var i = 0; i < itemsL; i++){
+
+                // check item type. Dont touch text node
 				if (children[i].nodeType !== 1 && el.nodeType !== 8) continue;
 				if (!children[i].span) continue;
+
+                // add item to internal list of items
 				this._addItem(children[i]);
 			}
+
+            // update refs to last item
 			this.lastItem = this.items[this.items.length - 1];
 
+            // trigger update styles of items
 			this.reflow();
 		},
 
-		//called by mutation observer
+
+
+        /**
+         * @desc sync passed array of items with internal list of item and update position of each item
+         *  - called by mutation observer
+         * @param {Array} items - list of container childrens, jquery dom objects
+         * @private
+         */
 		_removedItems: function(items) {
+
+            // get local vars
 			var childItems = this.el.childNodes,
 				cl = childItems.length;
+
 			//console.log("before removed: " + this.items.length)
 
-			//reinit items
+			// reinit items
 			for (var i = 0; i < items.length; i++){
+
+                // add/remove items to list
 				this.items.splice(this.items.indexOf(items[i]), 1);
 			}
 
 			//console.log("after remove:" + this.items.length)
+
+            // refresh last item refs
 			this.lastItem = this.items[this.items.length - 1];
 
+            // trigger update styles of items
 			this.reflow();
 		},
 
