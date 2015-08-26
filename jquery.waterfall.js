@@ -485,12 +485,27 @@ Like masonry column shift, but works. */
 			this.reflow();
 		},
 
-		//simple trigger routine
+
+
+        /**
+         * @desc simple trigger routine
+         * @param cbName
+         * @param arg
+         * @private
+         */
 		_trigger: function(cbName, arg) {
 			try {
-				if (this.options[cbName]) this.options[cbName].call(this.$el, arg);
+
+                // call event on container
+				if (this.options[cbName]){
+                    this.options[cbName].call(this.$el, arg);
+                }
+
+                // trigger event
 				this.$el.trigger(cbName, [arg]);
 			} catch (err) {
+
+                // throw err if occur
 				throw (err);
 			}
 		},
