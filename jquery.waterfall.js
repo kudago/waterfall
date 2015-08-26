@@ -636,10 +636,10 @@ Like masonry column shift, but works. */
 
 
 
-		//full update of layout
+		// full update of layout
 		_updateInterval: 0,
 
-        
+
 
         /**
          * @desc trigger update position of each item, container and run reflow
@@ -675,16 +675,38 @@ Like masonry column shift, but works. */
 			//console.log('time elapsed: ' + (Date.now() - window.start) + 'ms')
 		},
 
-		//set item width based on span/colWidth
+
+        
+        /**
+         * @desc set item width based on span/colWidth
+         * @param {jquery dom object} el - element whitch should be changed
+         * @private
+         */
 		_setItemWidth: function(el) {
+
+            // get amount of items
 			var span = el.span > this.lastItems.length ? this.lastItems.length : el.span,
+
+                // get amount of columns
 				cols = this.lastItems.length,
+
+                // one column width in percentage
 				colWeight = span / cols;
+
+            // check if use css calc function
 			if (this.options.useCalc) {
+
+                // get 100% of width
 				el.w = (100 * colWeight);
+
+                // set item width based of columns amount, margins and paddings
 				el.style.width = this.prefixedCalc + '(' + (100 * colWeight) + '% - ' + (el.mr + el.ml + (this.pl + this.pr) * colWeight) + 'px)';
 			} else {
+
+                // set new width based on columns amount and margins
 				el.w = ~~(this.colWidth * span - (el.ml + el.mr));
+
+                // se new width
 				el.style.width = el.w + 'px';
 			}
 		},
