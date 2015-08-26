@@ -535,29 +535,58 @@ Like masonry column shift, but works. */
 	});
 
 
-	$.fn.waterfall = function(arg, arg2) {
-		if (typeof arg == 'string') { //Call API method
-			return $(this).each(function(i, el) {
-					$(el).data('waterfall')[arg](arg2);
-				});
-		} else {
-			if (!this.length) {
-				throw new Error("No element passed to waterfall")
-				return false;
-			};
-			var $this = $(this),
-				opts = $.extend({}, {"colMinWidth": ~~$this[0].getAttribute("data-col-min-width") ||~~$this[0].getAttribute("data-width")}, arg);
-			if (opts.width && !opts.colMinWidth) {
-				opts.colMinWidth = opts.width;
-			}
-			var wf = new Waterfall($this, opts);
-			if (!$this.data('waterfall')) $this.data('waterfall', wf);
-			return wf;
-		}
-	};
-
-
     
+    /**
+     * @desc register plugin as jq library.
+     * - Init plugin for each item in selector if arg is string
+     * - Verify plugin dom refs and init plugin with arg2 as options. Moreover check min width of column.
+     * @param arg - selector || jq dom item
+     * @param arg2 - options
+     * @returns {*}
+     */
+    $.fn.waterfall = function(arg, arg2) {
+
+        //Call API method
+        if (typeof arg == 'string') {
+
+            // init plugin for each jQ object from selector
+            return $(this).each(function(i, el) { $(el).data('waterfall')[arg](arg2); });
+        } else {
+
+            // check amount of dom refs
+            if (!this.length) {
+                throw new Error("No element passed to waterfall");
+                return false;
+            }
+
+            // get basic values
+            var $this = $(this),
+
+            // set default options
+                opts = $.extend({}, {
+
+                    // try to get minimal column width from html attr
+                    "colMinWidth": ~~$this[0].getAttribute("data-col-min-width") || ~~$this[0].getAttribute("data-width")
+                }, arg);
+
+            // set minimal column width of container if is not setted
+            if (opts.width && !opts.colMinWidth) {
+                opts.colMinWidth = opts.width;
+            }
+
+            // run plugin
+            var wf = new Waterfall($this, opts);
+
+            // set plugin instance reference
+            if (!$this.data('waterfall')) $this.data('waterfall', wf);
+
+            // return plugin instance
+            return wf;
+        }
+    };
+
+
+
     /**
      * @desc Get name of css prefix based on document.defaultView styles
      * @param {String} property
