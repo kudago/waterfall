@@ -210,11 +210,24 @@ Like masonry column shift, but works. */
 			this._observeMutations();
 		},
 
+        /**
+         * @desc add item to internal list od items
+         * @param {jQuery dom node} item
+         * @private
+         */
 		_addItem: function(item){
+
+            // check if item shouldnt be added to list
 			if (item.getAttribute("data-exclude")) return;
+
+            // add item to array
 			this.items.push(item);
 		},
 
+        /**
+         * @desc 
+         * @private
+         */
 		_observeMutations: function() {
 			//Make Node changing observer - the fastest way to add items
 			if (window.MutationObserver) {
