@@ -4,15 +4,34 @@ Like masonry column shift, but works. */
 
 	'use strict';
 
+    // get css prefix for current browser
 	var cssPrefix = detectCSSPrefix();
 
+
+
+    /**
+     * @desc Plugin prototype definition.
+     * - just run function ._create
+     * @param {jQuery} el - jquery dom object
+     * @param {Object} opts - options used in plugin
+     * @constructor
+     */
 	var Waterfall = function(el, opts) {
+
+        // get dom refs
 		this.$el = $(el);
 		this.el = el[0];
+
+        // run internal function to create plugin
 		this._create(opts);
 	};
 
+
+
+    // set default class for plugin
 	Waterfall.defaultClass = 'waterfall';
+
+
 
 	$.extend(Waterfall.prototype, {
 		options: {
@@ -535,7 +554,7 @@ Like masonry column shift, but works. */
 	});
 
 
-    
+
     /**
      * @desc register plugin as jq library.
      * - Init plugin for each item in selector if arg is string
