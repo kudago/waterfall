@@ -634,10 +634,23 @@ Like masonry column shift, but works. */
 			return self.lastItems.length;
 		},
 
+
+
 		//full update of layout
 		_updateInterval: 0,
+
+        
+
+        /**
+         * @desc trigger update position of each item, container and run reflow
+         * @param {Integer} from - number between items should be updated
+         * @param {Integer} to - number between items should be updated
+         * @private
+         */
 		_update: function(from, to) {
 			//window.start = Date.now()
+
+            // set local vars
 			var self = this,
 				i = 0,
 				start = from || 0,
@@ -645,13 +658,20 @@ Like masonry column shift, but works. */
 				colsNeeded = self._initLayoutParams();
 
 			//console.log('beforePlace:' + this.lastItems.length)
+
+            // update styles of each item in array of childrens
 			for (i = start; i < end; i++) {
 				self._placeItem(self.items[i]);
 			}
+
 			//console.log('afterPlace:' + this.lastItems.length)
 
+            // set proper height of container
 			self._maximizeHeight();
+
+            // trigger reflow of each item
 			self._trigger('reflow');
+
 			//console.log('time elapsed: ' + (Date.now() - window.start) + 'ms')
 		},
 
